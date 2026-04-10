@@ -13,6 +13,7 @@
     "docs/DECISIONS.md",
     "docs/MEMORY_BANK.md",
     "docs/WORKFLOW.md",
+    "docs/PROJECT_BRIEF.md",
     "docs/tasks/_TEMPLATE.md",
     "docs/tasks/_TEMPLATE-SPEC.md",
     "scripts/run-agent.sh",

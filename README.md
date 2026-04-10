@@ -61,6 +61,7 @@ your-project/
 │   ├── DECISIONS.md         # YAML decisions log
 │   ├── MEMORY_BANK.md       # persistent state
 │   ├── WORKFLOW.md          # how the orchestrator works
+│   ├── PROJECT_BRIEF.md     # first-run intake questionnaire
 │   └── tasks/
 │       ├── _TEMPLATE.md         # owner task template
 │       └── _TEMPLATE-SPEC.md    # specialist task template
@@ -72,18 +73,19 @@ your-project/
 
 ## After install
 
-1. **Edit CLAUDE.md** — add your stack, conventions, and structure. Keep it under ~500 tokens.
-2. **Edit docs/ARCHITECTURE.md** — describe your system components and conventions.
+1. **Review `CLAUDE.md`** — the installer already filled in your stack and description. Verify it matches reality.
+2. **Fill `docs/PROJECT_BRIEF.md`** — eight short questions about your product, audience, MVP scope, and constraints. This is what the PM agent reads to understand the project.
 3. **Create your first task**:
    ```bash
-   cp docs/tasks/_TEMPLATE.md docs/tasks/TASK-001.md
-   ```
-   Fill in Goal, Background, Requirements, Acceptance Criteria.
-4. **Run Claude**:
-   ```bash
    claude
-   > use the pm agent to analyze docs/tasks/TASK-001.md, ask clarifying questions, then decompose
+   > use the pm agent to read docs/PROJECT_BRIEF.md and create TASK-001
    ```
+   The PM will ask clarifying questions if anything is ambiguous, then write `docs/tasks/TASK-001.md`.
+4. **Decompose and ship**:
+   ```
+   /decompose TASK-001
+   ```
+5. *(Optional)* Edit `docs/ARCHITECTURE.md` once your stack is settled — describe your system components and conventions.
 
 ## How the workflow works
 

@@ -42,6 +42,7 @@ const TEMPLATE_PATHS = [
   'docs/DECISIONS.md',
   'docs/MEMORY_BANK.md',
   'docs/WORKFLOW.md',
+  'docs/PROJECT_BRIEF.md',
   'docs/tasks/_TEMPLATE.md',
   'docs/tasks/_TEMPLATE-SPEC.md',
   'scripts/run-agent.sh',
@@ -157,12 +158,13 @@ What it installs:
   CLAUDE.md                Project root context
 
 After install:
-  1. Edit CLAUDE.md — verify the stack was written correctly
-  2. Create your first task:
-       cp docs/tasks/_TEMPLATE.md docs/tasks/TASK-001.md
+  1. Review CLAUDE.md — verify the stack was written correctly
+  2. Fill docs/PROJECT_BRIEF.md — eight questions about your product
   3. Run Claude:
        claude
-       > use the pm agent to analyze docs/tasks/TASK-001.md
+       > use the pm agent to read docs/PROJECT_BRIEF.md and create TASK-001
+  4. Then decompose:
+       /decompose TASK-001
 `;
 
 function parseArgs(argv) {
@@ -438,11 +440,12 @@ Stack:
 
 Next steps:
   1. Review CLAUDE.md — verify the stack was written correctly
-  2. Create your first task:
-       cp docs/tasks/_TEMPLATE.md docs/tasks/TASK-001.md
+  2. Fill docs/PROJECT_BRIEF.md — eight questions about your product
   3. Run Claude:
        claude
-       > use the pm agent to analyze docs/tasks/TASK-001.md
+       > use the pm agent to read docs/PROJECT_BRIEF.md and create TASK-001
+  4. Then decompose:
+       /decompose TASK-001
 `);
 }
 

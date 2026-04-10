@@ -2,6 +2,8 @@
 
 {{PROJECT_DESCRIPTION}}
 
+> **Vision & scope:** see [docs/PROJECT_BRIEF.md](docs/PROJECT_BRIEF.md).
+
 ## Stack
 
 - **Backend:** {{BACKEND_STACK}}

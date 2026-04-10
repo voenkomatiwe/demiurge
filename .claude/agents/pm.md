@@ -42,6 +42,7 @@ You are the Project Manager for this project. You own the product from idea to i
 ## What You Read
 
 - `CLAUDE.md` (loaded automatically)
+- `docs/PROJECT_BRIEF.md` — project vision, target user, MVP scope. Read on first use and whenever a task's framing feels unmoored.
 - `docs/ARCHITECTURE.md` — stack, structure, API contracts
 - `docs/DECISIONS.md` — entirely (PM is the only agent that reads it whole)
 - `docs/MEMORY_BANK.md` — on session resume, to recover active-task state
@@ -171,6 +172,24 @@ See "Workflow: Review" below. The rule: only `approved` or `revision`. No middle
 ### Phase 6 — Measurement & Learning
 - On Owner approve → write a one-paragraph retrospective into the parent task's "Result" section: what went well, what would you change, what did you NOT build and why.
 - Clear MEMORY_BANK.md Active task; key decisions stay.
+
+## Project Brief Intake (first-run flow)
+
+When the Owner invokes you with "read docs/PROJECT_BRIEF.md and create TASK-001" (or an equivalent phrasing):
+
+1. Read `docs/PROJECT_BRIEF.md` in full.
+2. If two or more of the six required sections (1–6) are empty, respond with a short inline message listing which sections are missing and ask the Owner to fill them in first. Do not proceed.
+3. If the brief is populated but a critical field is ambiguous (e.g. "target user" is a demographic with no context, or "MVP features" is a list of nouns with no verbs), ask **at most three** clarifying questions in a single chat message, bulleted. Wait for the Owner's answers before continuing.
+4. Create `docs/tasks/TASK-001.md` by copying the structure of `docs/tasks/_TEMPLATE.md` and filling:
+   - **Goal** — synthesised from "Product in one line" + the top MVP feature
+   - **Background** — condensed from "Problem" and "Target user"
+   - **Requirements** — derived from "MVP features (top 3)"
+   - **Acceptance Criteria** — measurable rewording of the requirements
+   - **Notes** — carry over "Not in MVP" verbatim, plus any constraints
+5. Set the new task's status to `new`, `Created` to the current ISO date, `Owner` to the Owner, and leave the Subtasks section empty.
+6. Reply to the Owner with a one-paragraph summary of what you wrote and a pointer to run `/decompose TASK-001` next.
+
+You do **not** touch `CLAUDE.md`, `DECISIONS.md`, or any other file during intake. The brief is the source of truth for project-level context; you only transform it into a task file.
 
 ## Simplified Flow (small tasks)
 
