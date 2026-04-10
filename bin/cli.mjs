@@ -11,12 +11,25 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
+import { emitKeypressEvents } from 'node:readline';
 import { createInterface } from 'node:readline/promises';
 import { stdin as input, stdout as output } from 'node:process';
 import { fileURLToPath } from 'node:url';
 
 const __filename = fileURLToPath(import.meta.url);
 const PACKAGE_ROOT = resolve(dirname(__filename), '..');
+
+// Minimal ANSI escape codes for the interactive selector. No dep.
+const ANSI = {
+  reset: '\x1b[0m',
+  bold: '\x1b[1m',
+  dim: '\x1b[2m',
+  cyan: '\x1b[36m',
+  hideCursor: '\x1b[?25l',
+  showCursor: '\x1b[?25h',
+  clearBelow: '\x1b[J',
+  up: (n) => `\x1b[${n}A`,
+};
 
 // Paths to copy from the package root into the target project.
 // Keep in sync with package.json "files". Explicit allowlist — do NOT
@@ -231,18 +244,97 @@ async function prompt(rl, question, defaultValue) {
   return answer.trim() || defaultValue || '';
 }
 
-async function promptPreset(rl, question, presets, defaultKey) {
+// Interactive single-choice selector. Uses raw-mode stdin + keypress events.
+// TTY-only: caller must ensure stdin is interactive before calling. In
+// non-interactive environments (CI, pipes) users should pass --yes and/or
+// explicit --backend/--frontend/... flags instead.
+async function selectFromList(label, presets, defaultKey) {
   const keys = Object.keys(presets);
-  const display = keys
-    .map((k) => (k === defaultKey ? `${k}*` : k))
-    .join(' | ');
-  const raw = await rl.question(`${question} [${display}]: `);
-  const choice = raw.trim() || defaultKey;
-  if (presets[choice]) return choice;
-  console.error(
-    `  Unknown choice "${choice}". Valid: ${keys.join(', ')}. Using default "${defaultKey}".`,
-  );
-  return defaultKey;
+  if (keys.length === 0) {
+    throw new Error(`selectFromList: no options for "${label}"`);
+  }
+
+  if (!input.isTTY || !output.isTTY) {
+    throw new Error(
+      `Cannot prompt for "${label}" in a non-interactive environment. ` +
+        'Pass --yes to accept all defaults, or provide explicit flags ' +
+        '(--package-manager, --backend, --frontend, --auth, --database, --design).',
+    );
+  }
+
+  let selectedIndex = Math.max(0, keys.indexOf(defaultKey));
+  const linesWritten = 1 + keys.length; // label line + one per item
+
+  const render = (firstRender) => {
+    if (!firstRender) {
+      output.write(ANSI.up(linesWritten) + ANSI.clearBelow);
+    }
+    output.write(
+      `${ANSI.bold}? ${label}${ANSI.reset} ${ANSI.dim}(use ↑↓ and enter)${ANSI.reset}\n`,
+    );
+    keys.forEach((key, i) => {
+      const value = presets[key];
+      const text = typeof value === 'string' ? `${key} — ${value}` : key;
+      if (i === selectedIndex) {
+        output.write(`${ANSI.cyan}❯ ${text}${ANSI.reset}\n`);
+      } else {
+        output.write(`  ${text}\n`);
+      }
+    });
+  };
+
+  return new Promise((resolveSelect) => {
+    emitKeypressEvents(input);
+    const wasRaw = Boolean(input.isRaw);
+    input.setRawMode(true);
+    output.write(ANSI.hideCursor);
+
+    const cleanup = () => {
+      input.removeListener('keypress', onKeypress);
+      process.removeListener('SIGINT', onSigint);
+      input.setRawMode(wasRaw);
+      output.write(ANSI.showCursor);
+      input.pause();
+    };
+
+    const onSigint = () => {
+      cleanup();
+      output.write('\n');
+      process.exit(130);
+    };
+
+    const onKeypress = (_str, key) => {
+      if (!key) return;
+      if ((key.ctrl && key.name === 'c') || key.name === 'escape') {
+        onSigint();
+        return;
+      }
+      if (key.name === 'up' || key.name === 'k') {
+        selectedIndex = (selectedIndex - 1 + keys.length) % keys.length;
+        render(false);
+        return;
+      }
+      if (key.name === 'down' || key.name === 'j') {
+        selectedIndex = (selectedIndex + 1) % keys.length;
+        render(false);
+        return;
+      }
+      if (key.name === 'return') {
+        cleanup();
+        // Collapse the multi-line widget into a single summary line.
+        output.write(ANSI.up(linesWritten) + ANSI.clearBelow);
+        output.write(
+          `${ANSI.cyan}✔${ANSI.reset} ${label}: ${ANSI.bold}${keys[selectedIndex]}${ANSI.reset}\n`,
+        );
+        resolveSelect(keys[selectedIndex]);
+      }
+    };
+
+    process.once('SIGINT', onSigint);
+    input.on('keypress', onKeypress);
+    input.resume();
+    render(true);
+  });
 }
 
 function validateChoice(value, presets, name) {
@@ -325,6 +417,31 @@ async function main() {
   let design = args.design;
 
   if (!args.yes && !args.dryRun) {
+    const needsPrompts =
+      !projectName ||
+      !projectDescription ||
+      !packageManager ||
+      !backend ||
+      !frontend ||
+      !auth ||
+      !database ||
+      !design;
+    if (needsPrompts && (!input.isTTY || !output.isTTY)) {
+      console.error(
+        'Error: stdin is not a TTY but interactive prompts are required.',
+      );
+      console.error(
+        'Either pass --yes to accept all defaults, or provide explicit flags:',
+      );
+      console.error(
+        '  --project, --description, --package-manager, --backend,',
+      );
+      console.error('  --frontend, --auth, --database, --design');
+      process.exit(2);
+    }
+
+    // Phase 1: text prompts via readline. Closed before the raw-mode wizard
+    // to give selectFromList exclusive access to stdin.
     const rl = createInterface({ input, output });
     try {
       if (!projectName) {
@@ -337,41 +454,41 @@ async function main() {
           'A software project',
         );
       }
-      if (!packageManager) {
-        packageManager = await promptPreset(
-          rl,
-          'Package manager',
-          PACKAGE_MANAGERS,
-          'bun',
-        );
-      }
-      if (!backend) {
-        backend = await promptPreset(rl, 'Backend', BACKEND_PRESETS, 'fastify');
-      }
-      if (!frontend) {
-        frontend = await promptPreset(
-          rl,
-          'Frontend',
-          FRONTEND_PRESETS,
-          'react-vite',
-        );
-      }
-      if (!auth) {
-        auth = await promptPreset(rl, 'Auth', AUTH_PRESETS, 'better-auth');
-      }
-      if (!database) {
-        database = await promptPreset(
-          rl,
-          'Database',
-          DATABASE_PRESETS,
-          'postgres',
-        );
-      }
-      if (!design) {
-        design = await promptPreset(rl, 'Design tool', DESIGN_PRESETS, 'pencil');
-      }
     } finally {
       rl.close();
+    }
+
+    // Phase 2: preset selects via the arrow-key wizard. selectFromList will
+    // throw a descriptive error if stdin is not a TTY here.
+    if (!packageManager) {
+      packageManager = await selectFromList(
+        'Package manager',
+        PACKAGE_MANAGERS,
+        'bun',
+      );
+    }
+    if (!backend) {
+      backend = await selectFromList('Backend', BACKEND_PRESETS, 'fastify');
+    }
+    if (!frontend) {
+      frontend = await selectFromList(
+        'Frontend',
+        FRONTEND_PRESETS,
+        'react-vite',
+      );
+    }
+    if (!auth) {
+      auth = await selectFromList('Auth', AUTH_PRESETS, 'better-auth');
+    }
+    if (!database) {
+      database = await selectFromList(
+        'Database',
+        DATABASE_PRESETS,
+        'postgres',
+      );
+    }
+    if (!design) {
+      design = await selectFromList('Design tool', DESIGN_PRESETS, 'pencil');
     }
   }
 
