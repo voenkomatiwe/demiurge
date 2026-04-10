@@ -9,6 +9,8 @@
   "files": [
     "bin/",
     ".claude/",
+    "design-system/MASTER.md",
+    "design-system/pages/.gitkeep",
     "docs/ARCHITECTURE.md",
     "docs/DECISIONS.md",
     "docs/MEMORY_BANK.md",

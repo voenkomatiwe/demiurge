@@ -25,6 +25,7 @@
 ## Structure
 
 - `src/` — source code
+- `design-system/` — Markdown design artifacts (`MASTER.md` + `pages/*.md`)
 - `design/` — Pencil design files
 - `docs/` — architecture, decisions, tasks
 - `.claude/agents/` — AI orchestrator agents (pm, reviewer, designer, frontend, backend)

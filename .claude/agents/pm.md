@@ -231,6 +231,29 @@ When you learn something from one specialist that affects another:
 3. If the constraint changes acceptance criteria — update them
 4. Update `docs/MEMORY_BANK.md` — add a one-line entry under "Open Blockers" or "Key Decisions"
 
+## Workflow: Design Context Propagation
+
+When creating specialist task files, populate `## Files to Read` according to the project's `DESIGN_TOOL` (see `CLAUDE.md → Stack`). This keeps specialist context windows small and deterministic — a frontend agent building the checkout page must never need the landing page's design spec.
+
+**`DESIGN_TOOL = Markdown`** (hierarchical `design-system/MASTER.md` + `design-system/pages/*.md`):
+
+- **Frontend tasks** — include EXACTLY these two entries:
+  - `design-system/MASTER.md` (always — tokens, global rules, anti-patterns)
+  - `design-system/pages/<single-page>.md` (only the one page this task touches)
+- **Never** include a glob (`design-system/pages/*`) or the full `design-system/` tree. If a task touches two pages, split it into two subtasks.
+- **Designer tasks** — include `design-system/MASTER.md` + the target `design-system/pages/<page>.md` (mark `(create)` if it doesn't exist yet).
+
+**`DESIGN_TOOL = Pencil`**:
+
+- **Frontend tasks** — include the specific `design/<file>.pen` the task implements + note which artboard/screen.
+- **Designer tasks** — include the target `.pen` file (or `(create)`).
+
+**`DESIGN_TOOL = Figma`** (code-only handoff):
+
+- Include only the task file itself. The designer writes the spec directly into `## Progress`; the frontend reads it from there. No files in `design/`.
+
+**Enforcement:** convention-level, not hook-gated. If a recurring violation emerges, extend `scope-check.sh` to warn on frontend tasks that include a `design-system/pages/*` glob — but not before.
+
 ## Memory Bank Protocol
 
 Keep `docs/MEMORY_BANK.md` current. It is the one file that survives compaction.

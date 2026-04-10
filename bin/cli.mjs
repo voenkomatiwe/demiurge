@@ -31,7 +31,7 @@ const ANSI = {
   up: (n) => `\x1b[${n}A`,
 };
 
-// Paths to copy from the package root into the target project.
+// Paths copied into EVERY new project, regardless of design tool choice.
 // Keep in sync with package.json "files". Explicit allowlist — do NOT
 // wildcard .claude/skills/ because developers often install unrelated
 // tool-specific skills there.
@@ -49,7 +49,6 @@ const TEMPLATE_PATHS = [
   '.claude/skills/review-task',
   '.claude/skills/task-status',
   '.claude/skills/frontend-design',
-  '.claude/skills/pencil-design',
   '.claude/settings.json',
   'docs/ARCHITECTURE.md',
   'docs/DECISIONS.md',
@@ -62,6 +61,25 @@ const TEMPLATE_PATHS = [
   'scripts/convert.sh',
   'CLAUDE.md',
 ];
+
+// Paths copied ONLY when the user picks a specific design tool.
+// Each entry is added on top of TEMPLATE_PATHS for that design choice.
+const DESIGN_TEMPLATE_PATHS = {
+  pencil: [
+    '.claude/skills/pencil-design',
+  ],
+  markdown: [
+    '.claude/skills/ui-ux-pro-max',
+    'design-system/MASTER.md',
+    'design-system/pages/.gitkeep',
+  ],
+  figma: [
+    // frontend-design is already in TEMPLATE_PATHS (always copied)
+  ],
+  none: [
+    // no design skills at all
+  ],
+};
 
 // Files where placeholder substitution runs during install.
 // Anything mentioning the package manager, stack, or project metadata goes here.
@@ -128,10 +146,15 @@ const DATABASE_PRESETS = {
   none: 'None',
 };
 
+// DESIGN_TOOL is both a state key (agents match strict equality on `label`)
+// and a user-facing option (wizard shows `description`). Object form keeps
+// them separate. Other *_PRESETS stay flat string because they're only
+// documentation substituted into CLAUDE.md.
 const DESIGN_PRESETS = {
-  pencil: 'Pencil (.pen files)',
-  figma: 'Figma',
-  none: 'None',
+  pencil:   { label: 'Pencil',   description: 'Pencil (.pen files)' },
+  markdown: { label: 'Markdown', description: 'Markdown (design-system/MASTER.md + pages/)' },
+  figma:    { label: 'Figma',    description: 'Figma (code-only handoff)' },
+  none:     { label: 'None',     description: 'None' },
 };
 
 const HELP = `
@@ -148,7 +171,7 @@ Options:
   --frontend <preset>         react-vite | nextjs | remix | vue-vite | none (default: react-vite)
   --auth <preset>             better-auth | clerk | nextauth | custom | none (default: better-auth)
   --database <preset>         postgres | sqlite | mysql | mongodb | none (default: postgres)
-  --design <preset>           pencil | figma | none (default: pencil)
+  --design <preset>           pencil | markdown | figma | none (default: markdown)
   --force                     Overwrite existing files if they exist
   --dry-run                   Print what would be copied, do nothing
   --yes, -y                   Skip prompts, use defaults
@@ -158,8 +181,9 @@ What it installs:
   .claude/agents/          5 specialist agents (pm, reviewer, designer, frontend, backend)
   .claude/hooks/           SessionStart, scope-check, SessionStop, protect-files, check-deps
   .claude/rules/           security, coding-style, agent-behavior
-  .claude/skills/          context-budget, analyze-repo, multi-execute, security-scan, design skills
+  .claude/skills/          orchestrator skills + one design skill matching --design
   .claude/workflows/       Declarative YAML pipeline definitions (default.yaml)
+  design-system/           Markdown design artifacts (only with --design markdown)
   .claude/settings.json    Hook registrations
   docs/ARCHITECTURE.md     Skeleton for your architecture
   docs/DECISIONS.md        YAML decisions log starter
@@ -274,7 +298,14 @@ async function selectFromList(label, presets, defaultKey) {
     );
     keys.forEach((key, i) => {
       const value = presets[key];
-      const text = typeof value === 'string' ? `${key} — ${value}` : key;
+      let text;
+      if (typeof value === 'string') {
+        text = `${key} — ${value}`;
+      } else if (value && typeof value === 'object' && 'description' in value) {
+        text = `${key} — ${value.description}`;
+      } else {
+        text = key;
+      }
       if (i === selectedIndex) {
         output.write(`${ANSI.cyan}❯ ${text}${ANSI.reset}\n`);
       } else {
@@ -346,14 +377,19 @@ function validateChoice(value, presets, name) {
   process.exit(2);
 }
 
-function findConflicts(targetDir) {
-  return TEMPLATE_PATHS.filter((p) => existsSync(join(targetDir, p)));
+function findConflicts(targetDir, design) {
+  const designPaths = DESIGN_TEMPLATE_PATHS[design] || [];
+  const allPaths = [...TEMPLATE_PATHS, ...designPaths];
+  return allPaths.filter((p) => existsSync(join(targetDir, p)));
 }
 
-function copyTemplate(targetDir, dryRun) {
+function copyTemplate(targetDir, dryRun, design) {
   const copied = [];
   const skipped = [];
-  for (const p of TEMPLATE_PATHS) {
+  const designPaths = DESIGN_TEMPLATE_PATHS[design] || [];
+  const allPaths = [...TEMPLATE_PATHS, ...designPaths];
+
+  for (const p of allPaths) {
     const src = join(PACKAGE_ROOT, p);
     const dest = join(targetDir, p);
     if (!existsSync(src)) {
@@ -396,15 +432,6 @@ async function main() {
   validateChoice(args.auth, AUTH_PRESETS, 'auth');
   validateChoice(args.database, DATABASE_PRESETS, 'database');
   validateChoice(args.design, DESIGN_PRESETS, 'design');
-
-  // Conflict check
-  const conflicts = findConflicts(targetDir);
-  if (conflicts.length > 0 && !args.force && !args.dryRun) {
-    console.error('\nExisting files that would be overwritten:');
-    for (const c of conflicts) console.error(`  ${c}`);
-    console.error('\nPass --force to overwrite, or --dry-run to preview.');
-    process.exit(1);
-  }
 
   // Collect project metadata
   let projectName = args.project;
@@ -488,7 +515,7 @@ async function main() {
       );
     }
     if (!design) {
-      design = await selectFromList('Design tool', DESIGN_PRESETS, 'pencil');
+      design = await selectFromList('Design tool', DESIGN_PRESETS, 'markdown');
     }
   }
 
@@ -500,7 +527,16 @@ async function main() {
   frontend ||= 'react-vite';
   auth ||= 'better-auth';
   database ||= 'postgres';
-  design ||= 'pencil';
+  design ||= 'markdown';
+
+  // Conflict check (after `design` is known, so we check only the paths we'll actually copy)
+  const conflicts = findConflicts(targetDir, design);
+  if (conflicts.length > 0 && !args.force && !args.dryRun) {
+    console.error('\nExisting files that would be overwritten:');
+    for (const c of conflicts) console.error(`  ${c}`);
+    console.error('\nPass --force to overwrite, or --dry-run to preview.');
+    process.exit(1);
+  }
 
   const pmCommands = PACKAGE_MANAGERS[packageManager];
 
@@ -514,11 +550,11 @@ async function main() {
     FRONTEND_STACK: FRONTEND_PRESETS[frontend],
     AUTH_STACK: AUTH_PRESETS[auth],
     DATABASE: DATABASE_PRESETS[database],
-    DESIGN_TOOL: DESIGN_PRESETS[design],
+    DESIGN_TOOL: DESIGN_PRESETS[design].label,
   };
 
   // Copy
-  const { copied, skipped } = copyTemplate(targetDir, args.dryRun);
+  const { copied, skipped } = copyTemplate(targetDir, args.dryRun, design);
 
   if (args.dryRun) {
     console.log('\nDry run — would copy:');
@@ -553,7 +589,7 @@ Stack:
   Frontend:        ${FRONTEND_PRESETS[frontend]}
   Auth:            ${AUTH_PRESETS[auth]}
   Database:        ${DATABASE_PRESETS[database]}
-  Design:          ${DESIGN_PRESETS[design]}
+  Design:          ${DESIGN_PRESETS[design].description}
 
 Next steps:
   1. Review CLAUDE.md — verify the stack was written correctly
