@@ -1,0 +1,42 @@
+{
+  "name": "create-claude-orchestrator",
+  "version": "0.1.0",
+  "description": "Install a Claude Code multi-agent orchestrator template into any project — agents, hooks, skills, task files, and workflow.",
+  "type": "module",
+  "bin": {
+    "create-claude-orchestrator": "bin/cli.mjs"
+  },
+  "files": [
+    "bin/",
+    ".claude/",
+    "docs/ARCHITECTURE.md",
+    "docs/DECISIONS.md",
+    "docs/MEMORY_BANK.md",
+    "docs/WORKFLOW.md",
+    "docs/tasks/_TEMPLATE.md",
+    "docs/tasks/_TEMPLATE-SPEC.md",
+    "scripts/run-agent.sh",
+    "scripts/convert.sh",
+    "CLAUDE.md",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "claude",
+    "claude-code",
+    "agents",
+    "orchestrator",
+    "ai",
+    "template",
+    "subagents",
+    "workflow"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/voenkomatiwe/claude-orchestrator.git"
+  }
+}
