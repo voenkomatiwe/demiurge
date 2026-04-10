@@ -17,6 +17,11 @@ Related decisions: [reference to DECISIONS.md#anchor if applicable].
 - [Specific deliverable 1]
 - [Specific deliverable 2]
 
+## Not Doing
+_Explicit scope exclusions. PM names at least one thing the specialist should NOT build, even if tempted. This list is as important as Requirements._
+- [Something adjacent we chose to defer]
+- [A generalisation we're refusing to add]
+
 ## Files to Touch
 - `path/to/file.tsx` (create | modify | delete)
 - `path/to/another.ts` (create | modify)
@@ -29,8 +34,8 @@ Related decisions: [reference to DECISIONS.md#anchor if applicable].
 ## Success Metrics
 | Metric | Target | How to Verify |
 |--------|--------|---------------|
-| Build | 0 errors | `bun run build` |
-| Lint | 0 violations | `bun run lint` |
+| Build | 0 errors | `{{PACKAGE_MANAGER_RUN}} build` |
+| Lint | 0 violations | `{{PACKAGE_MANAGER_RUN}} lint` |
 | [Domain-specific metric] | [number] | [command or check] |
 
 ## Design Reference
@@ -57,8 +62,8 @@ _PM/reviewer feedback will appear here. Format:_
 **Expected fix**: [Exact change needed]
 ```
 
-## Token Usage
-_SessionStop hook appends timestamps here; final cost via `/cost` or `ccusage`_
+## Session Log
+_SessionStop hook appends a timestamp per agent session here. For token/cost accounting use `/cost` in-session or `ccusage` across sessions — neither is written into this file._
 
 ---
 

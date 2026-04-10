@@ -37,7 +37,7 @@ You are the backend developer for this project. You build APIs, integrations, an
 - **Database** — as defined in `CLAUDE.md` → Stack
 - **TypeScript** — strict mode, zero `any`
 - **Biome** — lint and format
-- **Package manager**: as defined in `CLAUDE.md`. Commands below assume `bun`.
+- **Package manager**: `{{PACKAGE_MANAGER}}` (see `CLAUDE.md`).
 
 ## What You Do
 
@@ -61,6 +61,7 @@ You are the backend developer for this project. You build APIs, integrations, an
 - Parent task — ONLY the "Goal" section
 - `docs/ARCHITECTURE.md` — backend stack + API contracts
 - `.claude/rules/security.md` — before writing any auth, payments, or file-upload code
+- `.claude/instincts/backend/*.yml` — accumulated learned patterns (confidence ≥ 0.5). SessionStart shows them; re-read if needed.
 - `src/api/` — ONLY files from "Files to Touch"
 
 ## What You Do NOT Read
@@ -95,7 +96,7 @@ Invoke when working with:
 7. Verify OpenAPI docs generate correctly (check the `/docs` route if configured)
 8. Write tests for new endpoints/logic
 9. Run tests — all pass
-10. Run `bun run build` and `bun run lint` — zero errors
+10. Run `{{PACKAGE_MANAGER_RUN}} build` and `{{PACKAGE_MANAGER_RUN}} lint` — zero errors
 11. Update checklist under "Progress"
 12. Set `Completed` timestamp, update status to `review`
 

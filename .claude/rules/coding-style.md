@@ -5,9 +5,9 @@ Applies to all code-producing agents (frontend, backend). Stack defaults below a
 ## General
 
 - **Language**: All code and comments in English.
-- **Formatter**: Biome (`bun run format`). No ESLint, no Prettier, no manual formatting.
-- **Linter**: Biome (`bun run lint`). Zero violations before marking `review`.
-- **Package manager**: as defined in `CLAUDE.md` → Stack. Commands below assume `bun`; if your project uses a different package manager, substitute the equivalent run command.
+- **Formatter**: Biome (`{{PACKAGE_MANAGER_RUN}} format`). No ESLint, no Prettier, no manual formatting.
+- **Linter**: Biome (`{{PACKAGE_MANAGER_RUN}} lint`). Zero violations before marking `review`.
+- **Package manager**: `{{PACKAGE_MANAGER}}` (see `CLAUDE.md`). Commands below use this throughout.
 
 ## TypeScript
 
@@ -36,7 +36,7 @@ Applies to all code-producing agents (frontend, backend). Stack defaults below a
 
 ## shadcn/ui
 
-- Install via `npx shadcn@latest add [component]`.
+- Install via `{{PACKAGE_MANAGER_DLX}} shadcn@latest add [component]`.
 - Customize by editing the generated file in `src/components/ui/` directly, not by wrapping.
 - Do not duplicate shadcn primitives — use them.
 
@@ -87,7 +87,7 @@ Applies to all code-producing agents (frontend, backend). Stack defaults below a
 
 ## Build Hygiene
 
-- `bun run build` and `bun run lint` must pass before status `review`.
+- `{{PACKAGE_MANAGER_RUN}} build` and `{{PACKAGE_MANAGER_RUN}} lint` must pass before status `review`.
 - No `console.log` in committed code — use a structured logger (`pino` on the backend, remove on the frontend).
 - No `debugger` statements.
 - No dead code. Delete instead of commenting out.

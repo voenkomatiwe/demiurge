@@ -1,0 +1,73 @@
+# Default Workflow — full-stack feature pipeline
+#
+# This file is the switchboard for demiurge orchestration. The PM agent reads
+# it at the start of Phase 2 and walks the stages top-down, respecting
+# dependencies and approval gates.
+#
+# Add more workflows by creating sibling YAML files in this directory
+# (e.g. bugfix.yaml, research.yaml). The PM picks a workflow based on the
+# `workflow:` field in the parent task file (falls back to `default` if unset).
+#
+# Schema (plain-YAML, no external parser required):
+#   name:         identifier used in task files (`workflow: default`)
+#   description:  human-readable one-line summary
+#   stages[]:     ordered list of stages
+#     name:           unique stage key
+#     agents:         list of agent names (.claude/agents/*.md) dispatched here
+#     dependencies:   list of earlier stage names that must finish first
+#     strategy:       sequential | parallel (only meaningful for >1 agent)
+#     approval:       owner | pm | auto (who unblocks the next stage)
+#     optional:       true|false — whether PM can skip this stage when irrelevant
+#     condition:      free-text hint for when the stage applies (read by PM, not parsed)
+#
+# Rules the PM enforces:
+# 1. A stage with `strategy: parallel` and >1 agent MUST be dispatched via
+#    multiple `Task` tool calls in a single assistant turn.
+# 2. A stage whose `dependencies` are not all `done`/`approved` is blocked.
+#    PM runs `.claude/hooks/check-deps.sh` to verify before dispatch.
+# 3. `approval: owner` pauses the pipeline until the Owner explicitly approves.
+#    `approval: pm` auto-continues after PM review. `approval: auto` continues
+#    immediately without review (use sparingly — only for pure mechanical steps).
+
+name: default
+description: Full-stack feature / bugfix pipeline with design and review gates.
+
+stages:
+  - name: discovery
+    agents: [pm]
+    approval: owner
+    description: PM runs Q&A with Owner, writes problem statement in the parent task.
+
+  - name: decompose
+    agents: [pm]
+    dependencies: [discovery]
+    approval: owner
+    description: PM creates specialist task files from _TEMPLATE-SPEC.md with embedded Why.
+
+  - name: design
+    agents: [designer]
+    dependencies: [decompose]
+    strategy: sequential
+    approval: pm
+    optional: true
+    condition: Only if the task touches UI. Pure backend/infra tasks skip this stage.
+
+  - name: implement
+    agents: [frontend, backend]
+    dependencies: [decompose, design]
+    strategy: parallel
+    approval: pm
+    description: Specialists work in parallel. PM dispatches via Task tool in one turn.
+
+  - name: review
+    agents: [reviewer]
+    dependencies: [implement]
+    strategy: sequential
+    approval: auto
+    description: Build + lint + security-scan + tiered checklist. Blocker findings → revision.
+
+  - name: approve
+    agents: [pm]
+    dependencies: [review]
+    approval: owner
+    description: PM verifies acceptance criteria, then Owner signs off. Done.

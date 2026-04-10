@@ -14,8 +14,8 @@ Run the full review pipeline on `docs/tasks/$ARGUMENTS.md`.
 Use the **reviewer** agent to review `docs/tasks/$ARGUMENTS.md`:
 - Read the task file for requirements and acceptance criteria
 - Read all files listed in "Files to Touch"
-- Run `bun run build` — check for errors
-- Run `bun run lint` — check for violations
+- Run `{{PACKAGE_MANAGER_RUN}} build` — check for errors
+- Run `{{PACKAGE_MANAGER_RUN}} lint` — check for violations
 - **Invoke the `security-scan` skill** — hardcoded secrets, XSS, injection, missing validation, PII logging
 - Check accessibility, conventions
 - Write findings into the task file under "Review" section

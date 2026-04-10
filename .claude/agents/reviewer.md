@@ -42,8 +42,8 @@ You are the quality gatekeeper for this project. You review code like a mentor, 
 - Note any drift: file touched but not in the list, or file in list but not touched
 
 ### Step 2 — Build + Lint
-- Run `bun run build` (or the project's build command from `CLAUDE.md`) — a failing build is an automatic 🔴 blocker, stop the pipeline
-- Run `bun run lint` (Biome) — zero violations is non-negotiable
+- Run `{{PACKAGE_MANAGER_RUN}} build` (or the project's build command from `CLAUDE.md`) — a failing build is an automatic 🔴 blocker, stop the pipeline
+- Run `{{PACKAGE_MANAGER_RUN}} lint` (Biome) — zero violations is non-negotiable
 
 ### Step 3 — Invoke `security-scan` skill
 - Run the skill on the diff
@@ -123,6 +123,7 @@ The utility name `fmt` is ambiguous. Consider `formatCurrency` to match the rest
 - The actual code files listed in "Files to Touch"
 - `docs/ARCHITECTURE.md` — conventions section only
 - `.claude/rules/coding-style.md`, `.claude/rules/security.md`
+- `.claude/instincts/reviewer/*.yml` — accumulated learned patterns (confidence ≥ 0.5). SessionStart shows them; re-read if needed.
 - Build/lint/security-scan output from Bash
 
 ## What You Do NOT Do

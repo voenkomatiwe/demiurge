@@ -66,6 +66,48 @@ if [ -f "$PROJECT_DIR/docs/MEMORY_BANK.md" ]; then
   echo ""
 fi
 
+# Instincts — if there's exactly one in-progress task, show its role's
+# high-confidence learned patterns (≥ 0.5). Keeps the output short and
+# role-relevant; skips silently when no active role is discoverable.
+INSTINCTS_ROOT="$PROJECT_DIR/.claude/instincts"
+if [ -d "$INSTINCTS_ROOT" ] && [ -d "$TASKS_DIR" ]; then
+  active_task=$(grep -lE '^\*\*Status\*\*:[[:space:]]*in-progress' "$TASKS_DIR"/TASK-*.md 2>/dev/null \
+    | xargs -I{} ls -t {} 2>/dev/null | head -1 || true)
+  if [ -n "$active_task" ] && [ -f "$active_task" ]; then
+    active_base=$(basename "$active_task" .md)
+    active_role=""
+    case "$active_base" in
+      *-frontend) active_role="frontend" ;;
+      *-backend)  active_role="backend"  ;;
+      *-designer) active_role="designer" ;;
+      *-reviewer) active_role="reviewer" ;;
+      *-pm)       active_role="pm"       ;;
+      TASK-*)     active_role="pm"       ;;
+    esac
+    role_dir="$INSTINCTS_ROOT/$active_role"
+    if [ -n "$active_role" ] && [ -d "$role_dir" ]; then
+      shopt -s nullglob
+      first=1
+      for inst_file in "$role_dir"/*.yml; do
+        [ -f "$inst_file" ] || continue
+        conf=$(grep -m1 '^confidence:' "$inst_file" 2>/dev/null | awk '{print $2}')
+        # Skip anything below 0.5 (not yet confident).
+        awk -v c="${conf:-0}" 'BEGIN { exit !(c+0 >= 0.5) }' || continue
+        if [ "$first" = "1" ]; then
+          echo "### Instincts (role: $active_role, confidence ≥ 0.5)"
+          first=0
+        fi
+        ptext=$(grep -m1 '^pattern:' "$inst_file" | sed -E 's/^pattern:[[:space:]]*"?//; s/"?[[:space:]]*$//')
+        impl=$(grep -m1 '^implication:' "$inst_file" | sed -E 's/^implication:[[:space:]]*"?//; s/"?[[:space:]]*$//')
+        obs=$(grep -m1 '^observations:' "$inst_file" | awk '{print $2}')
+        printf -- "- **%s** (conf=%s, obs=%s)\n  %s\n  → %s\n" "$(basename "$inst_file" .yml)" "${conf:-?}" "${obs:-?}" "${ptext:-?}" "${impl:-?}"
+      done
+      shopt -u nullglob
+      [ "$first" = "0" ] && echo ""
+    fi
+  fi
+fi
+
 echo "### Agents available"
 echo "- **pm** (opus) — decompose, coordinate, review against criteria"
 echo "- **reviewer** (opus) — code quality gate: build, lint, security, a11y"

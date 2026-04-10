@@ -4,19 +4,19 @@
 
 ## Stack
 
-- **Backend:** Fastify + OpenAPI docs
-- **Frontend:** React + Vite + TypeScript + Tailwind CSS v4 + shadcn/ui
-- **Auth:** Better Auth (Phone OTP + Magic Link)
-- **Design:** Pencil (.pen files)
+- **Backend:** {{BACKEND_STACK}}
+- **Frontend:** {{FRONTEND_STACK}}
+- **Auth:** {{AUTH_STACK}}
+- **Design:** {{DESIGN_TOOL}}
 - **Linting:** Biome
-- **Database:** [your DB]
-- **Package manager:** [npm | pnpm | yarn | bun]
+- **Database:** {{DATABASE}}
+- **Package manager:** {{PACKAGE_MANAGER}}
 
 ## Conventions
 
 - Tailwind: semantic classes (`bg-primary`, not `bg-[#hex]`)
 - Components: shadcn/ui as base
-- Formatting: Biome (`bun run lint`, `bun run format` — or your package manager equivalent)
+- Formatting: Biome (`{{PACKAGE_MANAGER_RUN}} lint`, `{{PACKAGE_MANAGER_RUN}} format`)
 - Backend routes: Fastify schemas + OpenAPI on every endpoint
 - Code and comments: English
 

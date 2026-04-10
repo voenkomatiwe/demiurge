@@ -14,6 +14,30 @@ Format: YAML. Agents: search by `tags` and keywords — only PM reads the file w
   alternatives_considered: ["Y", "Z"]
 ```
 
+## Demiurge Template Provenance
+
+> This section documents where the demiurge orchestrator template itself comes from.
+> Projects installed via `npx demiurge` inherit this record; you can keep it for
+> context or remove it if it isn't useful to your team.
+
+```yaml
+- id: 0
+  date: 2026-04-10
+  title: "Adopted demiurge orchestrator template"
+  decision: "Installed the demiurge template (five-agent Claude Code orchestrator) as the project's coordination layer."
+  reason: "Solves context loss between agents via self-contained task files, binary approval gates, hooks for scope + dependency enforcement, and declarative YAML workflows — without taking on any npm runtime dependency."
+  tags: [orchestration, tooling, provenance]
+  sources:
+    - name: "msitarzewski/agency-agents"
+      used_for: "Agent prompt structure (Identity → Rules → Workflow → Metrics → Personality); PM prompt base; reviewer severity markers."
+    - name: "affaan-m/everything-claude-code"
+      used_for: "Reviewer 5-step methodology; confidence ≥ 80% rule; planner plan-format."
+    - name: "ruvnet/ruflo"
+      used_for: "Concept only — dependency-blocking workflow engine, declarative YAML pipelines. Reimplemented in bash + YAML; no runtime dependency on ruflo."
+  alternatives_considered: ["MetaGPT", "CrewAI", "ruflo as npm dep", "GitHub Agentic Workflows"]
+  notes: "Full provenance of specific prompt and script adaptations lives in old-docs/REPOS_ANALYSIS.md at install time. Copy or remove per your project's needs."
+```
+
 ## How to Add a New Decision
 
 1. Append a new entry to the YAML block above.

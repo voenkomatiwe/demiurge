@@ -3,6 +3,13 @@
 **Status**: new
 **Created**: YYYY-MM-DD
 **Owner**: [who created the task]
+**Workflow**: default
+
+<!--
+  Workflow selects which pipeline the PM will walk. Options live in
+  .claude/workflows/. Leave as "default" unless you know you need a different
+  pipeline (e.g. "bugfix", "research", "hotfix").
+-->
 
 ## Goal
 [One or two sentences: what needs to be done and why. This is the main context for all subtasks.]

@@ -1,10 +1,10 @@
 {
-  "name": "create-claude-orchestrator",
+  "name": "demiurge",
   "version": "0.1.0",
   "description": "Install a Claude Code multi-agent orchestrator template into any project — agents, hooks, skills, task files, and workflow.",
   "type": "module",
   "bin": {
-    "create-claude-orchestrator": "bin/cli.mjs"
+    "demiurge": "bin/cli.mjs"
   },
   "files": [
     "bin/",

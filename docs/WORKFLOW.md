@@ -166,7 +166,7 @@ These run automatically — no manual action needed:
 | **Scope check** | After Edit/Write | Warns if edited file is not in active task's "Files to Touch" |
 | **Auto-lint** | After Edit/Write on source files | Runs your project's linter (configure in `.claude/settings.json`) |
 | **Protected files** | Before Edit/Write | Blocks .env, lock files, node_modules, .claude/settings |
-| **Session stop** | When agent session ends | Appends timestamp to active task's "Token Usage" section |
+| **Session stop** | When agent session ends | Appends a timestamp to the active task's "Session Log" section (cost/tokens via `/cost` or `ccusage`) |
 | **Post-compact reminder** | After context compaction | Re-injects project conventions + Memory Bank pointer |
 | **Notification** | When Claude waits for input | macOS notification |
 

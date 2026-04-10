@@ -53,6 +53,7 @@ You are the UI/UX designer for this project. You create designs in Pencil (`.pen
 - Your task file (`docs/tasks/TASK-XXX-designer.md`) — ENTIRELY
 - Parent task — ONLY the "Goal" section
 - `design/` — existing components and design system for consistency
+- `.claude/instincts/designer/*.yml` — accumulated learned patterns (confidence ≥ 0.5). SessionStart shows them; re-read if needed.
 
 ## What You Do NOT Read
 
@@ -61,18 +62,24 @@ You are the UI/UX designer for this project. You create designs in Pencil (`.pen
 - `src/` — you don't work with code
 - Other specialists' task files
 
-## Skills
+## Skills — selection rule (important)
 
-Always invoke before starting:
-- **pencil-design** — `.pen` file workflow (critical rules for batch_design/batch_get)
-- **frontend-design** — aesthetics, anti-patterns, typography, color
+You have two design skills available. **Pick exactly one per task** based on the project's design tool declared in `CLAUDE.md → Stack → Design`:
+
+| Project uses | Skill to invoke | Why |
+|--------------|-----------------|-----|
+| **Pencil** (`.pen` files in `design/`) | `pencil-design` | Enforces `.pen` workflow, component reuse, MCP batch tools, design-to-code handoff. |
+| **No design tool** or **Figma** (code-only workflow) | `frontend-design` | Drives the aesthetic direction when there is no design file to follow — typography, color, composition. |
+| **Both Pencil AND a code-only component** | Use `pencil-design` for the `.pen` file update; then `frontend-design` is NOT needed because the spec dictates the aesthetics. |
+
+**Never invoke both in the same task.** They have overlapping aesthetic guidance and will produce contradictory decisions. If you catch yourself reaching for the second skill, stop and re-read the task — you're designing something that isn't in scope.
 
 ## Workflow
 
 1. Read your task file entirely
 2. Read parent task (only "Goal" — understand the purpose)
 3. Check existing files in `design/` for reusable components
-4. Invoke `pencil-design` skill
+4. Invoke the correct skill per the "Skills — selection rule" table above (typically `pencil-design` for `.pen` projects, `frontend-design` for code-only)
 5. Design at mobile (375px) first, then tablet and desktop
 6. Verify each section via `pencil_get_screenshot`
 7. Write component specs under "Progress" in your task file, mapping Pencil variables to Tailwind v4 semantic tokens

@@ -3,9 +3,9 @@
 # Non-blocking: always exits 0.
 #
 # The Claude Code harness passes session metadata via stdin JSON; we only use
-# .session_id and .transcript_path if present. Token usage itself is recorded
-# externally by `ccusage` or `/cost` — here we just drop a timestamp so the PM
-# can correlate agent sessions to tasks later.
+# .session_id and .transcript_path if present. Token and cost accounting is
+# recorded externally by `ccusage` or `/cost` — here we just drop a timestamp
+# in the task's Session Log so the PM can correlate agent sessions to tasks.
 
 set -euo pipefail
 
@@ -24,13 +24,13 @@ ACTIVE_FILE=$(grep -lE '^\*\*Status\*\*:[[:space:]]*in-progress' "$TASKS_DIR"/TA
 [ -z "$ACTIVE_FILE" ] && exit 0
 [ -f "$ACTIVE_FILE" ] || exit 0
 
-# If the file has a "## Token Usage" section, append a line; otherwise add one.
-if grep -q '^## Token Usage' "$ACTIVE_FILE"; then
-  # Append just below the heading (simple sed: after the line matching "## Token Usage")
+# If the file has a "## Session Log" section, append a line; otherwise add one.
+if grep -q '^## Session Log' "$ACTIVE_FILE"; then
+  # Append just below the heading (simple sed: after the line matching "## Session Log")
   tmp=$(mktemp)
   awk -v ts="$TS" -v sid="$SESSION_ID" '
     {print}
-    /^## Token Usage/ && !printed {
+    /^## Session Log/ && !printed {
       print "- " ts " — session " (sid ? sid : "local") " (cost via /cost or ccusage)"
       printed=1
     }
@@ -38,9 +38,32 @@ if grep -q '^## Token Usage' "$ACTIVE_FILE"; then
 else
   {
     echo ""
-    echo "## Token Usage"
+    echo "## Session Log"
     echo "- $TS — session ${SESSION_ID:-local} (cost via /cost or ccusage)"
   } >> "$ACTIVE_FILE"
+fi
+
+# --- Instinct extraction ----------------------------------------------------
+#
+# Detect the agent role from the task filename. Convention:
+#   TASK-<id>-<role>.md → role is the trailing segment
+#   TASK-<id>.md        → role is "pm" (parent task)
+# Unknown filenames are silently skipped so the hook never blocks.
+
+TASK_BASENAME=$(basename "$ACTIVE_FILE" .md)
+INSTINCT_ROLE=""
+case "$TASK_BASENAME" in
+  *-frontend) INSTINCT_ROLE="frontend" ;;
+  *-backend)  INSTINCT_ROLE="backend"  ;;
+  *-designer) INSTINCT_ROLE="designer" ;;
+  *-reviewer) INSTINCT_ROLE="reviewer" ;;
+  *-pm)       INSTINCT_ROLE="pm"       ;;
+  TASK-*)     INSTINCT_ROLE="pm"       ;; # bare parent task is PM's domain
+esac
+
+if [ -n "$INSTINCT_ROLE" ] && [ -x "$PROJECT_DIR/.claude/hooks/extract-instincts.sh" ]; then
+  bash "$PROJECT_DIR/.claude/hooks/extract-instincts.sh" \
+    "$INSTINCT_ROLE" "$ACTIVE_FILE" "$TRANSCRIPT" >/dev/null 2>&1 || true
 fi
 
 exit 0

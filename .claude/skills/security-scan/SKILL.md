@@ -9,7 +9,7 @@ Mechanical + pattern-based security audit. Not a replacement for a full SAST too
 
 ## When to Invoke
 
-- By the **reviewer agent** as part of `/review-task`, right after `bun run build` and `bun run lint`.
+- By the **reviewer agent** as part of `/review-task`, right after `{{PACKAGE_MANAGER_RUN}} build` and `{{PACKAGE_MANAGER_RUN}} lint`.
 - By PM on a task that touches auth, payments, file uploads, or PII.
 - On demand before a merge.
 
@@ -56,7 +56,7 @@ Grep for:
 
 ### 6. Dependency Red Flags
 
-- Any `bun add` / `npm install` in the diff? If yes → verify the package is on an allowlist and has no known CVEs.
+- Any new dependency in the diff (e.g. `{{PACKAGE_MANAGER}} add` or lock-file changes)? If yes → verify the package is on an allowlist and has no known CVEs.
 - Postinstall scripts in new deps → CRITICAL if unknown.
 
 ## Steps

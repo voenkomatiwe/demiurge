@@ -1,4 +1,4 @@
-# create-claude-orchestrator
+# demiurge
 
 A drop-in multi-agent orchestrator template for [Claude Code](https://claude.com/claude-code). Install once and you get five specialist agents (PM, reviewer, designer, frontend, backend), a structured task-file workflow, context-preserving hooks, a Memory Bank that survives `/compact`, and a set of skills for analysis, security, and parallel execution.
 
@@ -22,7 +22,7 @@ If your project uses a different stack, edit `CLAUDE.md` after install and the s
 
 ```bash
 # Inside your project directory
-npx create-claude-orchestrator
+npx demiurge
 ```
 
 The CLI will prompt for project name + description, then copy the template files into your current directory.
@@ -30,19 +30,19 @@ The CLI will prompt for project name + description, then copy the template files
 ### Non-interactive
 
 ```bash
-npx create-claude-orchestrator --yes --project my-app --description "My thing"
+npx demiurge --yes --project my-app --description "My thing"
 ```
 
 ### Overwrite existing files
 
 ```bash
-npx create-claude-orchestrator --force
+npx demiurge --force
 ```
 
 ### Preview without writing
 
 ```bash
-npx create-claude-orchestrator --dry-run
+npx demiurge --dry-run
 ```
 
 ## What gets installed
@@ -127,7 +127,7 @@ Based on the prompt structure from [msitarzewski/agency-agents](https://github.c
 | SessionStart | `startup`/`resume` | Loads project summary + active tasks + Memory Bank snapshot |
 | Scope check | After Edit/Write | Warns if edited file is not in active task's "Files to Touch" |
 | Protect files | Before Edit/Write | Blocks `.env`, lock files, `.git/`, `.claude/settings*` |
-| Session stop | When agent session ends | Appends timestamp to active task's Token Usage section |
+| Session stop | When agent session ends | Appends timestamp to active task's Session Log (cost via `/cost` or `ccusage`) |
 | Post-compact reminder | After `/compact` | Re-injects conventions + Memory Bank pointer |
 
 ## Slash commands

@@ -37,8 +37,8 @@ Applies to all agents. Governs how agents collaborate inside the orchestrator.
 
 ## Quality Gates
 
-- Build must pass (`bun run build`) before `review`.
-- Lint must pass (`bun run lint` — Biome) before `review`.
+- Build must pass (`{{PACKAGE_MANAGER_RUN}} build`) before `review`.
+- Lint must pass (`{{PACKAGE_MANAGER_RUN}} lint` — Biome) before `review`.
 - For UI tasks: visually verify via screenshot (designer → Pencil `pencil_get_screenshot`, frontend → Playwright or manual).
 - For backend tasks: tests for happy path + main error cases must exist and pass.
 
@@ -58,7 +58,7 @@ Applies to all agents. Governs how agents collaborate inside the orchestrator.
 - `SessionStart` auto-loads project context — read it.
 - `PostToolUse` (scope-check) warns about out-of-scope edits — heed the warning.
 - `PostToolUse` (Biome) auto-fixes lint — no action needed.
-- `Stop` (SessionStop) appends token usage timestamps — no action needed.
+- `Stop` (SessionStop) appends a session-log timestamp to the active task — no action needed. Token/cost accounting happens separately via `/cost` or `ccusage`.
 
 ## When Uncertain
 

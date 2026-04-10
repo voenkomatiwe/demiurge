@@ -7,6 +7,10 @@
           {
             "type": "command",
             "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/session-start.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/check-deps.sh --unblock-all 2>/dev/null; exit 0"
           }
         ]
       },
@@ -15,7 +19,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "echo '## Post-Compact Reminder\\n- Use Bun, not npm\\n- Tailwind: semantic classes (bg-primary, not bg-[#hex])\\n- Run bun run build && bun run lint before marking task as review\\n- Read your task file from docs/tasks/ — do not scan entire src/\\n- Update task status after completing work\\n- Re-read docs/MEMORY_BANK.md to recover active-task state'"
+            "command": "echo '## Post-Compact Reminder\\n- Use {{PACKAGE_MANAGER}} as the package manager\\n- Tailwind: semantic classes (bg-primary, not bg-[#hex])\\n- Run {{PACKAGE_MANAGER_RUN}} build && {{PACKAGE_MANAGER_RUN}} lint before marking task as review\\n- Read your task file from docs/tasks/ — do not scan entire src/\\n- Update task status after completing work\\n- Re-read docs/MEMORY_BANK.md to recover active-task state'"
           }
         ]
       }
@@ -41,7 +45,7 @@
           },
           {
             "type": "command",
-            "command": "FILE=$(cat | jq -r '.tool_input.file_path // empty'); if [ -n \"$FILE\" ] && [[ \"$FILE\" == *.ts || \"$FILE\" == *.tsx || \"$FILE\" == *.js || \"$FILE\" == *.jsx ]]; then cd \"$CLAUDE_PROJECT_DIR\" && npx biome check --write \"$FILE\" 2>/dev/null; fi; exit 0"
+            "command": "FILE=$(cat | jq -r '.tool_input.file_path // empty'); if [ -n \"$FILE\" ] && [[ \"$FILE\" == *.ts || \"$FILE\" == *.tsx || \"$FILE\" == *.js || \"$FILE\" == *.jsx ]]; then cd \"$CLAUDE_PROJECT_DIR\" && {{PACKAGE_MANAGER_DLX}} biome check --write \"$FILE\" 2>/dev/null; fi; exit 0"
           }
         ]
       }
