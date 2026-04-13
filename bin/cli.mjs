@@ -8,6 +8,8 @@ import {
   existsSync,
   mkdirSync,
   readFileSync,
+  readdirSync,
+  statSync,
   writeFileSync,
 } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
@@ -31,91 +33,169 @@ const ANSI = {
   up: (n) => `\x1b[${n}A`,
 };
 
-// Paths copied into EVERY new project, regardless of design tool choice.
-// Keep in sync with package.json "files". Explicit allowlist — do NOT
-// wildcard .claude/skills/ because developers often install unrelated
-// tool-specific skills there.
-const TEMPLATE_PATHS = [
-  '.claude/agents',
-  '.claude/hooks',
-  '.claude/rules',
-  '.claude/instincts',
-  '.claude/workflows',
-  '.claude/skills/analyze-repo',
-  '.claude/skills/context-budget',
-  '.claude/skills/multi-execute',
-  '.claude/skills/security-scan',
-  '.claude/skills/decompose',
-  '.claude/skills/review-task',
-  '.claude/skills/task-status',
-  '.claude/skills/frontend-design',
-  '.claude/settings.json',
-  'docs/ARCHITECTURE.md',
-  'docs/DECISIONS.md',
-  'docs/MEMORY_BANK.md',
-  'docs/WORKFLOW.md',
-  'docs/PROJECT_BRIEF.md',
-  'docs/tasks/_TEMPLATE.md',
-  'docs/tasks/_TEMPLATE-SPEC.md',
-  'scripts/run-agent.sh',
-  'scripts/convert.sh',
-  'CLAUDE.md',
-];
-
-// Paths copied into the TARGET project root, stripping the "scaffold/" prefix.
-// These form the monorepo skeleton (bun workspaces + Biome) that every new
-// demiurge project starts with. Templated files in here also participate in
-// placeholder substitution via TEMPLATED_FILES (using the target-relative path).
-const SCAFFOLD_PATHS = [
-  'scaffold/package.json',
-  'scaffold/biome.json',
-  'scaffold/.gitignore',
-  'scaffold/frontend/package.json',
-  'scaffold/frontend/.gitkeep',
-  'scaffold/backend/package.json',
-  'scaffold/backend/.gitkeep',
-];
-
-// Paths copied ONLY when the user picks a specific design tool.
-// Each entry is added on top of TEMPLATE_PATHS for that design choice.
-const DESIGN_TEMPLATE_PATHS = {
-  pencil: [
-    '.claude/skills/pencil-design',
-  ],
+// Non-skill design-tool resources that live outside agents/.
+// Keyed by --design choice; appended to the resolved path list.
+const DESIGN_EXTRA_PATHS = {
   markdown: [
-    '.claude/skills/ui-ux-pro-max',
-    'design-system/MASTER.md',
-    'design-system/pages/.gitkeep',
-  ],
-  figma: [
-    // frontend-design is already in TEMPLATE_PATHS (always copied)
-  ],
-  none: [
-    // no design skills at all
+    { src: 'agents/_design-system/MASTER.md', dest: 'design-system/MASTER.md' },
+    { src: 'agents/_design-system/pages/.gitkeep', dest: 'design-system/pages/.gitkeep' },
   ],
 };
 
-// Files where placeholder substitution runs during install.
-// Anything mentioning the package manager, stack, or project metadata goes here.
-const TEMPLATED_FILES = [
-  'CLAUDE.md',
-  'package.json',
-  'docs/ARCHITECTURE.md',
-  'docs/MEMORY_BANK.md',
-  'docs/WORKFLOW.md',
-  'docs/tasks/_TEMPLATE-SPEC.md',
-  '.claude/rules/coding-style.md',
-  '.claude/rules/agent-behavior.md',
-  '.claude/rules/security.md',
-  '.claude/agents/pm.md',
-  '.claude/agents/reviewer.md',
-  '.claude/agents/designer.md',
-  '.claude/agents/frontend.md',
-  '.claude/agents/backend.md',
-  '.claude/skills/review-task/SKILL.md',
-  '.claude/skills/security-scan/SKILL.md',
-  '.claude/settings.json',
+// Root-level project files (not inside agents/) that every install gets.
+const ROOT_PATHS = [
+  { src: 'CLAUDE.md', dest: 'CLAUDE.md' },
+  { src: 'scripts/run-agent.sh', dest: 'scripts/run-agent.sh' },
+  { src: 'scripts/convert.sh', dest: 'scripts/convert.sh' },
 ];
+
+// ---------------------------------------------------------------------------
+// Agent package discovery — reads agents/ folder structure at install time.
+// Convention: agents/{name}/agent.md → .claude/agents/{name}.md
+//             agents/{name}/skills/{skill}/ → .claude/skills/{skill}/
+//             agents/_shared/* → .claude/*
+//             agents/_docs/* → docs/*
+//             agents/_scaffold/* → project root (prefix stripped)
+// ---------------------------------------------------------------------------
+
+// Parse conditional_skills from YAML frontmatter. Returns e.g.
+// { pencil: ['pencil-design'], markdown: ['ui-ux-pro-max'] }
+function parseConditionalSkills(agentMdPath) {
+  const content = readFileSync(agentMdPath, 'utf8');
+  const fmMatch = content.match(/^---\n([\s\S]*?)\n---/);
+  if (!fmMatch) return {};
+  const fm = fmMatch[1];
+  const csIdx = fm.indexOf('conditional_skills:');
+  if (csIdx === -1) return {};
+  const result = {};
+  const lines = fm.slice(csIdx).split('\n').slice(1);
+  let currentKey = null;
+  for (const line of lines) {
+    const keyMatch = line.match(/^\s{2}(\w[\w-]*):$/);
+    const valueMatch = line.match(/^\s{4}-\s+(\S+)$/);
+    if (keyMatch) {
+      currentKey = keyMatch[1];
+      result[currentKey] = [];
+    } else if (valueMatch && currentKey) {
+      result[currentKey].push(valueMatch[1]);
+    } else if (!/^\s/.test(line)) {
+      break; // left the conditional_skills block
+    }
+  }
+  return result;
+}
+
+// Walk a directory recursively, returning relative paths of all files.
+function walkFiles(dir, prefix = '') {
+  const results = [];
+  for (const entry of readdirSync(dir)) {
+    if (entry.startsWith('.') && entry !== '.gitignore' && entry !== '.gitkeep') continue;
+    const full = join(dir, entry);
+    const rel = prefix ? `${prefix}/${entry}` : entry;
+    if (statSync(full).isDirectory()) {
+      results.push(...walkFiles(full, rel));
+    } else {
+      results.push(rel);
+    }
+  }
+  return results;
+}
+
+// Build the full { src, dest } path list from the agents/ directory.
+function discoverPaths(packageRoot, design) {
+  const agentsDir = join(packageRoot, 'agents');
+  const paths = [];
+
+  // 1. Agent definitions + their skills
+  for (const entry of readdirSync(agentsDir)) {
+    if (entry.startsWith('_') || entry.startsWith('.')) continue;
+    const entryPath = join(agentsDir, entry);
+    if (!statSync(entryPath).isDirectory()) continue;
+    const agentMd = join(entryPath, 'agent.md');
+    if (!existsSync(agentMd)) continue;
+
+    paths.push({
+      src: `agents/${entry}/agent.md`,
+      dest: `.claude/agents/${entry}.md`,
+    });
+
+    // Skills
+    const skillsDir = join(entryPath, 'skills');
+    if (existsSync(skillsDir)) {
+      const conditional = parseConditionalSkills(agentMd);
+      const allConditional = new Set(Object.values(conditional).flat());
+      const allowed = new Set(conditional[design] || []);
+
+      for (const skill of readdirSync(skillsDir)) {
+        if (skill.startsWith('.')) continue;
+        if (!statSync(join(skillsDir, skill)).isDirectory()) continue;
+        // Skip conditional skills that don't match the chosen design tool
+        if (allConditional.has(skill) && !allowed.has(skill)) continue;
+        paths.push({
+          src: `agents/${entry}/skills/${skill}`,
+          dest: `.claude/skills/${skill}`,
+        });
+      }
+    }
+
+    // Agent-specific rules (if any)
+    const rulesDir = join(entryPath, 'rules');
+    if (existsSync(rulesDir)) {
+      for (const f of walkFiles(rulesDir)) {
+        paths.push({
+          src: `agents/${entry}/rules/${f}`,
+          dest: `.claude/rules/${f}`,
+        });
+      }
+    }
+  }
+
+  // 2. Shared resources → .claude/
+  const sharedDir = join(agentsDir, '_shared');
+  if (existsSync(sharedDir)) {
+    for (const f of walkFiles(sharedDir)) {
+      paths.push({ src: `agents/_shared/${f}`, dest: `.claude/${f}` });
+    }
+  }
+
+  // 3. Doc templates → docs/
+  const docsDir = join(agentsDir, '_docs');
+  if (existsSync(docsDir)) {
+    for (const f of walkFiles(docsDir)) {
+      paths.push({ src: `agents/_docs/${f}`, dest: `docs/${f}` });
+    }
+  }
+
+  // 4. Scaffold → project root (prefix stripped)
+  const scaffoldDir = join(agentsDir, '_scaffold');
+  if (existsSync(scaffoldDir)) {
+    for (const f of walkFiles(scaffoldDir)) {
+      paths.push({ src: `agents/_scaffold/${f}`, dest: f });
+    }
+  }
+
+  // 5. Root-level project files
+  paths.push(...ROOT_PATHS);
+
+  // 6. Design-tool-specific non-skill resources
+  if (DESIGN_EXTRA_PATHS[design]) {
+    paths.push(...DESIGN_EXTRA_PATHS[design]);
+  }
+
+  return paths;
+}
+
+// Discover which destination files need placeholder substitution.
+// Any .md, .json, .yaml, or .sh file that lands in the target is a candidate.
+const TEMPLATABLE_EXTS = new Set(['.md', '.json', '.yaml', '.yml', '.sh']);
+function discoverTemplatedFiles(resolvedPaths) {
+  return resolvedPaths
+    .map(({ dest }) => dest)
+    .filter((dest) => {
+      const ext = dest.slice(dest.lastIndexOf('.'));
+      return TEMPLATABLE_EXTS.has(ext);
+    });
+}
 
 // Derivation table for package-manager-dependent commands.
 // Demiurge ships a Bun workspaces monorepo; other managers are not supported
@@ -214,10 +294,10 @@ What it installs:
 After install:
   1. bun install — wires workspaces, installs root devDeps (Biome)
   2. Review CLAUDE.md — verify the stack was written correctly
-  3. Fill docs/PROJECT_BRIEF.md — eight questions about your product
+  3. Drop project materials into docs/intake/ (notes, screenshots, links)
   4. Run Claude:
        claude
-       > use the pm agent to read docs/PROJECT_BRIEF.md and create TASK-001
+       > use the pm agent to read docs/intake/ and generate a brief
   5. Then decompose:
        /decompose TASK-001
 `;
@@ -392,20 +472,8 @@ function validateChoice(value, presets, name) {
   process.exit(2);
 }
 
-// Resolve { src, dest } for every path the installer touches. SCAFFOLD_PATHS
-// strip the "scaffold/" prefix so files land in the target root; everything
-// else keeps its relative path untouched.
-function resolveAllPaths(design) {
-  const designPaths = DESIGN_TEMPLATE_PATHS[design] || [];
-  return [
-    ...TEMPLATE_PATHS.map((p) => ({ src: p, dest: p })),
-    ...designPaths.map((p) => ({ src: p, dest: p })),
-    ...SCAFFOLD_PATHS.map((p) => ({ src: p, dest: p.replace(/^scaffold\//, '') })),
-  ];
-}
-
 function findConflicts(targetDir, design) {
-  return resolveAllPaths(design)
+  return discoverPaths(PACKAGE_ROOT, design)
     .filter(({ dest }) => existsSync(join(targetDir, dest)))
     .map(({ dest }) => dest);
 }
@@ -413,8 +481,9 @@ function findConflicts(targetDir, design) {
 function copyTemplate(targetDir, dryRun, design) {
   const copied = [];
   const skipped = [];
+  const resolved = discoverPaths(PACKAGE_ROOT, design);
 
-  for (const { src, dest } of resolveAllPaths(design)) {
+  for (const { src, dest } of resolved) {
     const absSrc = join(PACKAGE_ROOT, src);
     const absDest = join(targetDir, dest);
     if (!existsSync(absSrc)) {
@@ -429,11 +498,11 @@ function copyTemplate(targetDir, dryRun, design) {
     cpSync(absSrc, absDest, { recursive: true, preserveTimestamps: true });
     copied.push(dest);
   }
-  return { copied, skipped };
+  return { copied, skipped, resolved };
 }
 
-function applyTemplates(targetDir, vars) {
-  for (const rel of TEMPLATED_FILES) {
+function applyTemplates(targetDir, vars, resolved) {
+  for (const rel of discoverTemplatedFiles(resolved)) {
     const full = join(targetDir, rel);
     if (!existsSync(full)) continue;
     let content = readFileSync(full, 'utf8');
@@ -572,7 +641,7 @@ async function main() {
   };
 
   // Copy
-  const { copied, skipped } = copyTemplate(targetDir, args.dryRun, design);
+  const { copied, skipped, resolved } = copyTemplate(targetDir, args.dryRun, design);
 
   if (args.dryRun) {
     console.log('\nDry run — would copy:');
@@ -589,7 +658,7 @@ async function main() {
   }
 
   // Placeholder substitution
-  applyTemplates(targetDir, templateVars);
+  applyTemplates(targetDir, templateVars, resolved);
 
   // Success output
   copied.forEach((c) => console.log(`  ✓ ${c}`));
@@ -613,10 +682,10 @@ Next steps:
   1. bun install
        # installs root devDeps (Biome) and wires the frontend/backend workspaces
   2. Review CLAUDE.md — verify the stack was written correctly
-  3. Fill docs/PROJECT_BRIEF.md — eight questions about your product
+  3. Drop project materials into docs/intake/ (notes, screenshots, links)
   4. Run Claude:
        claude
-       > use the pm agent to read docs/PROJECT_BRIEF.md and create TASK-001
+       > use the pm agent to read docs/intake/ and generate a brief
   5. Then decompose:
        /decompose TASK-001
 `);
