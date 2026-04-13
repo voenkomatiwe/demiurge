@@ -138,6 +138,18 @@ function discoverPaths(packageRoot, design) {
       }
     }
 
+    // Agent-specific references (style guides, etc.)
+    // Installed at the same path so agent.md references resolve correctly.
+    const refsDir = join(entryPath, 'references');
+    if (existsSync(refsDir)) {
+      for (const f of walkFiles(refsDir)) {
+        paths.push({
+          src: `agents/${entry}/references/${f}`,
+          dest: `agents/${entry}/references/${f}`,
+        });
+      }
+    }
+
     // Agent-specific rules (if any)
     const rulesDir = join(entryPath, 'rules');
     if (existsSync(rulesDir)) {

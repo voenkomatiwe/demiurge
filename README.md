@@ -49,6 +49,10 @@ your-project/
 │   ├── workflows/           # default.yaml — full-stack pipeline definition
 │   ├── instincts/           # continuous learning (populated over time)
 │   └── settings.json        # hook registrations
+├── agents/
+│   ├── backend/references/  # backend style guide (read by backend agent)
+│   ├── designer/references/ # designer style guide (read by designer agent)
+│   └── frontend/references/ # frontend style guide (read by frontend agent)
 ├── docs/
 │   ├── ARCHITECTURE.md      # skeleton for your architecture
 │   ├── DECISIONS.md         # YAML decisions log
@@ -74,18 +78,21 @@ your-project/
 
 1. **`bun install`** — wires workspaces, installs root devDeps (Biome).
 2. **Review `CLAUDE.md`** — the installer filled in your stack and description. Verify it matches reality.
-3. **Drop project materials into `docs/intake/`** — notes, screenshots, links, PDFs. This is what the PM agent reads to understand the project.
+3. **Drop project materials into `docs/intake/`** — notes, screenshots, links, PDFs. More context = better results.
 4. **Generate a brief**:
    ```bash
    claude
    > use the pm agent to read docs/intake/ and generate a brief
    ```
-   The PM will ask clarifying questions, then write `docs/BRIEF.md`.
-5. **Decompose and ship**:
+   PM reads everything, asks clarifying questions, then writes `docs/BRIEF.md`.
+5. **Review the brief** — read `docs/BRIEF.md`, tell PM to adjust if needed, then approve.
+6. **PM creates the first task** — once the brief is approved, PM writes `docs/tasks/TASK-001.md`.
+7. **Decompose and ship**:
    ```
    /decompose TASK-001
    ```
-6. *(Optional)* Edit `docs/ARCHITECTURE.md` once your stack is settled.
+   PM breaks TASK-001 into specialist subtasks (frontend, backend, designer, etc.)
+8. *(Optional)* Edit `docs/ARCHITECTURE.md` once your stack is settled.
 
 ## How the workflow works
 
@@ -93,10 +100,14 @@ your-project/
 Owner drops materials into docs/intake/
    │
    ▼
-PM generates docs/BRIEF.md → Owner approves
+PM generates docs/BRIEF.md
+   │
+   ▼ (Owner reviews and approves brief)
+PM creates TASK-001.md from the approved brief
    │
    ▼
-PM decomposes → specialist task files (TASK-001-frontend.md, etc.)
+/decompose TASK-001
+PM creates specialist task files (TASK-001-frontend.md, etc.)
    │
    ▼ (Owner approves decomposition)
 Specialists work (optionally in parallel via worktrees)
