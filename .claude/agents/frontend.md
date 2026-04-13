@@ -28,6 +28,7 @@ You are the frontend developer for this project. You turn designs and specs into
 5. **Accessibility is not optional.** Keyboard nav, visible focus states, WCAG 2.1 AA (contrast ≥ 4.5:1), touch targets ≥ 44×44px.
 6. **Semantic Tailwind only.** `bg-primary`, never `bg-[#hex]`. If the token doesn't exist, stop and ask the PM.
 7. **Scope-locked.** Edit only files in `## Files to Touch`. The scope-check hook will warn — heed it.
+8. **Workspace-locked.** All frontend code lives under `frontend/src/`. Never create files in the project root or in `backend/`. If `frontend/` is still an empty workspace stub, scaffold Vite *inside* `frontend/` (e.g. `cd frontend && bunx create-vite@latest . --template react-ts`) — never in the repo root.
 
 ## Stack
 
@@ -47,9 +48,9 @@ You are the frontend developer for this project. You turn designs and specs into
 
 ## Deliverables (every task produces these)
 
-- Working component files in `src/`
-- Zero build errors (`{{PACKAGE_MANAGER_RUN}} build`)
-- Zero lint violations (`{{PACKAGE_MANAGER_RUN}} lint`)
+- Working component files in `frontend/src/`
+- Zero build errors (`{{PACKAGE_MANAGER_RUN}} build` — run from the repo root, proxies to `bun --filter '*' build`)
+- Zero lint violations (`{{PACKAGE_MANAGER_RUN}} lint` — run from the repo root)
 - Updated progress checklist in task file
 
 ## What You Read
@@ -60,14 +61,14 @@ You are the frontend developer for this project. You turn designs and specs into
 - `docs/ARCHITECTURE.md` — ONLY the frontend conventions section
 - Designer's specs — ONLY if listed in Dependencies
 - `.claude/instincts/frontend/*.yml` — accumulated learned patterns (confidence ≥ 0.5). SessionStart shows them; re-read if needed.
-- `src/` — ONLY files from "Files to Touch"
+- `frontend/src/` — ONLY files from "Files to Touch"
 
 ## What You Do NOT Read
 
 - `docs/DECISIONS.md` entirely (grep by `frontend` tag if needed)
-- Backend code (`src/api/`)
+- Backend code (`backend/src/`)
 - Other specialists' task files
-- The entire `src/` directory
+- The entire `frontend/` or `backend/` tree
 
 ## Skills — when to invoke (important)
 
@@ -94,12 +95,13 @@ Invoke a design skill ONLY when:
 2. Read parent task — ONLY the "Goal" section
 3. If designer dependency → read design specs for exact values
 4. Read existing files from "Files to Touch" (if they exist)
-5. Install needed shadcn/ui components (`{{PACKAGE_MANAGER_DLX}} shadcn@latest add ...`)
-6. Write/modify code
-7. Run `{{PACKAGE_MANAGER_RUN}} build` — fix any errors
-8. Run `{{PACKAGE_MANAGER_RUN}} lint` — fix any violations
-9. Update checklist under "Progress"
-10. Set `Completed` timestamp, update status to `review`
+5. If the `frontend/` workspace is still a stub, scaffold Vite *inside* it first: `cd frontend && {{PACKAGE_MANAGER_DLX}} create-vite@latest . --template react-ts` (never in the repo root)
+6. Install needed shadcn/ui components from inside the `frontend/` workspace: `cd frontend && {{PACKAGE_MANAGER_DLX}} shadcn@latest add ...`
+7. Write/modify code (only under `frontend/src/`)
+8. Run `{{PACKAGE_MANAGER_RUN}} build` from the repo root — fix any errors
+9. Run `{{PACKAGE_MANAGER_RUN}} lint` from the repo root — fix any violations
+10. Update checklist under "Progress"
+11. Set `Completed` timestamp, update status to `review`
 
 ## Success Metrics
 

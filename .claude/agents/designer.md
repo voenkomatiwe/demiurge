@@ -65,7 +65,7 @@ In all modes, the component specification must include:
 
 - `docs/ARCHITECTURE.md` — technical architecture irrelevant for design
 - `docs/DECISIONS.md` — technical decisions don't affect design
-- `src/` — you don't work with code
+- `frontend/`, `backend/` — you don't work with code
 - Other specialists' task files
 
 ## Skills — selection rule (important)
@@ -76,7 +76,7 @@ You have three design skill stacks available. The active stack is determined by 
 |---|---|---|
 | `Pencil` | 1. `pencil-design` (auto-loads `frontend-design` per its Rule 6) | `design/*.pen` |
 | `Markdown` | 1. `ui-ux-pro-max` → 2. `frontend-design` | `design-system/MASTER.md` + `design-system/pages/<page>.md` |
-| `Figma` *(code-only handoff)* | 1. `frontend-design` | Spec in task file `## Progress`; code in `src/` |
+| `Figma` *(code-only handoff)* | 1. `frontend-design` | Spec in task file `## Progress`; code in `frontend/src/` |
 
 **Load order matters.** For `Markdown`:
 - `ui-ux-pro-max` first — structural reasoning (industry rules, design-system hierarchy, anti-patterns). Tells you *what* to build and *what to avoid*. Follow its `SKILL.md` for exact CLI invocation; it generates/updates `design-system/MASTER.md` via `--persist`.

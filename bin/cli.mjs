@@ -62,6 +62,20 @@ const TEMPLATE_PATHS = [
   'CLAUDE.md',
 ];
 
+// Paths copied into the TARGET project root, stripping the "scaffold/" prefix.
+// These form the monorepo skeleton (bun workspaces + Biome) that every new
+// demiurge project starts with. Templated files in here also participate in
+// placeholder substitution via TEMPLATED_FILES (using the target-relative path).
+const SCAFFOLD_PATHS = [
+  'scaffold/package.json',
+  'scaffold/biome.json',
+  'scaffold/.gitignore',
+  'scaffold/frontend/package.json',
+  'scaffold/frontend/.gitkeep',
+  'scaffold/backend/package.json',
+  'scaffold/backend/.gitkeep',
+];
+
 // Paths copied ONLY when the user picks a specific design tool.
 // Each entry is added on top of TEMPLATE_PATHS for that design choice.
 const DESIGN_TEMPLATE_PATHS = {
@@ -85,6 +99,7 @@ const DESIGN_TEMPLATE_PATHS = {
 // Anything mentioning the package manager, stack, or project metadata goes here.
 const TEMPLATED_FILES = [
   'CLAUDE.md',
+  'package.json',
   'docs/ARCHITECTURE.md',
   'docs/MEMORY_BANK.md',
   'docs/WORKFLOW.md',
@@ -103,13 +118,13 @@ const TEMPLATED_FILES = [
 ];
 
 // Derivation table for package-manager-dependent commands.
-// "run" = script runner (e.g. `bun run build`, `pnpm build`)
-// "dlx" = one-off executor (e.g. `bunx shadcn`, `pnpm dlx shadcn`)
+// Demiurge ships a Bun workspaces monorepo; other managers are not supported
+// by the scaffold at the moment. The placeholder mechanism is kept so a future
+// release can re-introduce the choice without reshaping the installer.
+// "run" = script runner (e.g. `bun run build`)
+// "dlx" = one-off executor (e.g. `bunx shadcn`)
 const PACKAGE_MANAGERS = {
   bun: { run: 'bun run', dlx: 'bunx' },
-  pnpm: { run: 'pnpm', dlx: 'pnpm dlx' },
-  npm: { run: 'npm run', dlx: 'npx' },
-  yarn: { run: 'yarn', dlx: 'yarn dlx' },
 };
 
 // Stack presets — user picks a label, we expand it to a human-readable stack line.
@@ -166,7 +181,6 @@ Usage:
 Options:
   --project <name>            Project name (default: current directory name)
   --description <text>        One-line project description
-  --package-manager <name>    bun | pnpm | npm | yarn (default: bun)
   --backend <preset>          fastify | express | hono | nestjs | none (default: fastify)
   --frontend <preset>         react-vite | nextjs | remix | vue-vite | none (default: react-vite)
   --auth <preset>             better-auth | clerk | nextauth | custom | none (default: better-auth)
@@ -193,14 +207,18 @@ What it installs:
   scripts/run-agent.sh     Launch a specialist on a task
   scripts/convert.sh       Export agents to .agents/ and .codex/
   CLAUDE.md                Project root context
+  package.json             Bun workspaces root (frontend + backend) + proxy scripts
+  biome.json               Shared Biome config (lint + format)
+  frontend/, backend/      Workspace stubs — specialists fill them in on first task
 
 After install:
-  1. Review CLAUDE.md — verify the stack was written correctly
-  2. Fill docs/PROJECT_BRIEF.md — eight questions about your product
-  3. Run Claude:
+  1. bun install — wires workspaces, installs root devDeps (Biome)
+  2. Review CLAUDE.md — verify the stack was written correctly
+  3. Fill docs/PROJECT_BRIEF.md — eight questions about your product
+  4. Run Claude:
        claude
        > use the pm agent to read docs/PROJECT_BRIEF.md and create TASK-001
-  4. Then decompose:
+  5. Then decompose:
        /decompose TASK-001
 `;
 
@@ -227,9 +245,6 @@ function parseArgs(argv) {
         break;
       case '--description':
         args.description = argv[++i];
-        break;
-      case '--package-manager':
-        args.packageManager = argv[++i];
         break;
       case '--backend':
         args.backend = argv[++i];
@@ -377,32 +392,42 @@ function validateChoice(value, presets, name) {
   process.exit(2);
 }
 
-function findConflicts(targetDir, design) {
+// Resolve { src, dest } for every path the installer touches. SCAFFOLD_PATHS
+// strip the "scaffold/" prefix so files land in the target root; everything
+// else keeps its relative path untouched.
+function resolveAllPaths(design) {
   const designPaths = DESIGN_TEMPLATE_PATHS[design] || [];
-  const allPaths = [...TEMPLATE_PATHS, ...designPaths];
-  return allPaths.filter((p) => existsSync(join(targetDir, p)));
+  return [
+    ...TEMPLATE_PATHS.map((p) => ({ src: p, dest: p })),
+    ...designPaths.map((p) => ({ src: p, dest: p })),
+    ...SCAFFOLD_PATHS.map((p) => ({ src: p, dest: p.replace(/^scaffold\//, '') })),
+  ];
+}
+
+function findConflicts(targetDir, design) {
+  return resolveAllPaths(design)
+    .filter(({ dest }) => existsSync(join(targetDir, dest)))
+    .map(({ dest }) => dest);
 }
 
 function copyTemplate(targetDir, dryRun, design) {
   const copied = [];
   const skipped = [];
-  const designPaths = DESIGN_TEMPLATE_PATHS[design] || [];
-  const allPaths = [...TEMPLATE_PATHS, ...designPaths];
 
-  for (const p of allPaths) {
-    const src = join(PACKAGE_ROOT, p);
-    const dest = join(targetDir, p);
-    if (!existsSync(src)) {
-      skipped.push(`${p} (missing in package)`);
+  for (const { src, dest } of resolveAllPaths(design)) {
+    const absSrc = join(PACKAGE_ROOT, src);
+    const absDest = join(targetDir, dest);
+    if (!existsSync(absSrc)) {
+      skipped.push(`${src} (missing in package)`);
       continue;
     }
     if (dryRun) {
-      copied.push(p);
+      copied.push(dest);
       continue;
     }
-    mkdirSync(dirname(dest), { recursive: true });
-    cpSync(src, dest, { recursive: true, preserveTimestamps: true });
-    copied.push(p);
+    mkdirSync(dirname(absDest), { recursive: true });
+    cpSync(absSrc, absDest, { recursive: true, preserveTimestamps: true });
+    copied.push(dest);
   }
   return { copied, skipped };
 }
@@ -426,17 +451,18 @@ async function main() {
   console.log(`demiurge → ${targetDir}`);
 
   // Validate preset flags early
-  validateChoice(args.packageManager, PACKAGE_MANAGERS, 'package-manager');
   validateChoice(args.backend, BACKEND_PRESETS, 'backend');
   validateChoice(args.frontend, FRONTEND_PRESETS, 'frontend');
   validateChoice(args.auth, AUTH_PRESETS, 'auth');
   validateChoice(args.database, DATABASE_PRESETS, 'database');
   validateChoice(args.design, DESIGN_PRESETS, 'design');
 
-  // Collect project metadata
+  // Collect project metadata. Package manager is hard-wired to "bun" — the
+  // scaffold is a bun-workspaces monorepo and cannot be installed with any
+  // other manager at the moment.
   let projectName = args.project;
   let projectDescription = args.description;
-  let packageManager = args.packageManager;
+  const packageManager = 'bun';
   let backend = args.backend;
   let frontend = args.frontend;
   let auth = args.auth;
@@ -447,7 +473,6 @@ async function main() {
     const needsPrompts =
       !projectName ||
       !projectDescription ||
-      !packageManager ||
       !backend ||
       !frontend ||
       !auth ||
@@ -461,7 +486,7 @@ async function main() {
         'Either pass --yes to accept all defaults, or provide explicit flags:',
       );
       console.error(
-        '  --project, --description, --package-manager, --backend,',
+        '  --project, --description, --backend,',
       );
       console.error('  --frontend, --auth, --database, --design');
       process.exit(2);
@@ -486,14 +511,8 @@ async function main() {
     }
 
     // Phase 2: preset selects via the arrow-key wizard. selectFromList will
-    // throw a descriptive error if stdin is not a TTY here.
-    if (!packageManager) {
-      packageManager = await selectFromList(
-        'Package manager',
-        PACKAGE_MANAGERS,
-        'bun',
-      );
-    }
+    // throw a descriptive error if stdin is not a TTY here. Package manager
+    // is intentionally not prompted — demiurge currently only supports bun.
     if (!backend) {
       backend = await selectFromList('Backend', BACKEND_PRESETS, 'fastify');
     }
@@ -522,7 +541,6 @@ async function main() {
   // Apply defaults for anything still unset (dry-run / --yes / non-interactive)
   projectName ||= basename(targetDir);
   projectDescription ||= 'A software project';
-  packageManager ||= 'bun';
   backend ||= 'fastify';
   frontend ||= 'react-vite';
   auth ||= 'better-auth';
@@ -584,7 +602,7 @@ async function main() {
 Installed in ${targetDir}
 
 Stack:
-  Package manager: ${packageManager}
+  Package manager: ${packageManager} (bun workspaces: frontend + backend)
   Backend:         ${BACKEND_PRESETS[backend]}
   Frontend:        ${FRONTEND_PRESETS[frontend]}
   Auth:            ${AUTH_PRESETS[auth]}
@@ -592,12 +610,14 @@ Stack:
   Design:          ${DESIGN_PRESETS[design].description}
 
 Next steps:
-  1. Review CLAUDE.md — verify the stack was written correctly
-  2. Fill docs/PROJECT_BRIEF.md — eight questions about your product
-  3. Run Claude:
+  1. bun install
+       # installs root devDeps (Biome) and wires the frontend/backend workspaces
+  2. Review CLAUDE.md — verify the stack was written correctly
+  3. Fill docs/PROJECT_BRIEF.md — eight questions about your product
+  4. Run Claude:
        claude
        > use the pm agent to read docs/PROJECT_BRIEF.md and create TASK-001
-  4. Then decompose:
+  5. Then decompose:
        /decompose TASK-001
 `);
 }

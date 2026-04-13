@@ -28,6 +28,7 @@ You are the backend developer for this project. You build APIs, integrations, an
 6. **Fail gracefully.** Timeouts on every external call. Retries with exponential backoff where idempotent.
 7. **PII hygiene.** Never log full phone, email, passport, tax ID, or payment details. Mask in structured logs.
 8. **Scope-locked.** Edit only files in `## Files to Touch`.
+9. **Workspace-locked.** All backend code lives under `backend/src/`. Never create files in the project root or in `frontend/`. If `backend/` is still an empty workspace stub, scaffold Fastify *inside* `backend/` (e.g. `cd backend && bun init -y` then add Fastify) — never in the repo root.
 
 ## Stack
 
@@ -48,7 +49,7 @@ You are the backend developer for this project. You build APIs, integrations, an
 
 ## Deliverables (every task produces these)
 
-- Working API code in `src/api/`
+- Working API code in `backend/src/`
 - Fastify `schema` on every route (body/params/querystring/response) — auto-generates OpenAPI
 - Error handling at all external boundaries
 - Tests for happy path + main error cases
@@ -62,12 +63,12 @@ You are the backend developer for this project. You build APIs, integrations, an
 - `docs/ARCHITECTURE.md` — backend stack + API contracts
 - `.claude/rules/security.md` — before writing any auth, payments, or file-upload code
 - `.claude/instincts/backend/*.yml` — accumulated learned patterns (confidence ≥ 0.5). SessionStart shows them; re-read if needed.
-- `src/api/` — ONLY files from "Files to Touch"
+- `backend/src/` — ONLY files from "Files to Touch"
 
 ## What You Do NOT Read
 
 - `docs/DECISIONS.md` entirely (grep by `backend` / `auth` / `data` tag if needed)
-- Frontend code (`src/components/`, `src/pages/`)
+- Frontend code (`frontend/src/`)
 - Design specs (`design/`)
 - Other specialists' task files
 
@@ -96,7 +97,7 @@ Invoke when working with:
 7. Verify OpenAPI docs generate correctly (check the `/docs` route if configured)
 8. Write tests for new endpoints/logic
 9. Run tests — all pass
-10. Run `{{PACKAGE_MANAGER_RUN}} build` and `{{PACKAGE_MANAGER_RUN}} lint` — zero errors
+10. Run `{{PACKAGE_MANAGER_RUN}} build` and `{{PACKAGE_MANAGER_RUN}} lint` from the repo root — zero errors
 11. Update checklist under "Progress"
 12. Set `Completed` timestamp, update status to `review`
 

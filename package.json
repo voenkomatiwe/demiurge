@@ -9,6 +9,7 @@
   "files": [
     "bin/",
     ".claude/",
+    "scaffold/",
     "design-system/MASTER.md",
     "design-system/pages/.gitkeep",
     "docs/ARCHITECTURE.md",

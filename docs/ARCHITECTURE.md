@@ -4,21 +4,24 @@ _This file is read by PM and specialist agents. Keep it under ~2000 tokens. Grep
 
 ## System Components
 
-_Describe the top-level components of the system. ASCII diagrams are fine._
+The project is a **Bun workspaces monorepo** with two workspaces: `frontend/` and `backend/`.
 
 ```
-[your diagram here]
+┌──────────────┐       HTTP       ┌──────────────┐
+│  frontend/   │ ◀──────────────▶ │   backend/   │
+│ React + Vite │                  │ Fastify API  │
+└──────────────┘                  └──────────────┘
 ```
 
-### 1. [Component name]
-- **Stack**: [language, framework, key libs]
-- **Directory**: `src/...`
+### 1. Frontend (`frontend/`)
+- **Stack**: {{FRONTEND_STACK}}
+- **Directory**: `frontend/src/`
 - **Deploy**: [target]
 
-### 2. [Component name]
-- **Stack**: ...
-- **Directory**: ...
-- **Deploy**: ...
+### 2. Backend (`backend/`)
+- **Stack**: {{BACKEND_STACK}}
+- **Directory**: `backend/src/`
+- **Deploy**: [target]
 
 ## Frontend Conventions
 

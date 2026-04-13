@@ -76,8 +76,8 @@ Grep for:
 ### Security scan
 **Verdict**: pass | fail
 **Findings**:
-- [CRITICAL] src/api/upload.ts:42 — missing MIME type check → exploit: arbitrary file upload
-- [HIGH] src/components/Comment.tsx:18 — dangerouslySetInnerHTML without sanitize
+- [CRITICAL] backend/src/routes/upload.ts:42 — missing MIME type check → exploit: arbitrary file upload
+- [HIGH] frontend/src/components/Comment.tsx:18 — dangerouslySetInnerHTML without sanitize
 ```
 
 ## Non-Goals

@@ -13,19 +13,21 @@ Return (≤ 40 lines total):
 
 ```
 ### Structure
-- src/<top-level dirs with 1-line purpose>
+- frontend/src/<top-level dirs with 1-line purpose>
+- backend/src/<top-level dirs with 1-line purpose>
 - design/<.pen files>
 - docs/<relevant docs>
 
 ### Key existing files relevant to task
-- src/components/ui/*         — shadcn primitives in use
-- src/App.tsx                 — current entrypoint
-- src/main.tsx                — Vite mount
-- src/api/*                   — Fastify routes
+- frontend/src/components/ui/*    — shadcn primitives in use
+- frontend/src/App.tsx            — current entrypoint
+- frontend/src/main.tsx           — Vite mount
+- backend/src/routes/*            — Fastify routes
+- backend/src/server.ts           — Fastify bootstrap
 
 ### Existing conventions observed
 - Tailwind v4 with semantic tokens (bg-primary, bg-background)
-- Biome config: strict
+- Biome config: strict (single biome.json at repo root)
 - Components: PascalCase, one per file
 - Fastify routes with schema → OpenAPI
 
@@ -38,10 +40,10 @@ Return (≤ 40 lines total):
 
 ## Steps
 
-1. `git ls-files | head -100` — sample the repo structure, filter by `src/`, `design/`, `docs/`.
+1. `git ls-files | head -100` — sample the repo structure, filter by `frontend/`, `backend/`, `design/`, `docs/`.
 2. Identify file patterns:
-   - shadcn primitives → `src/components/ui/*.tsx`
-   - existing pages → `src/pages/*` or `src/App.tsx`
+   - shadcn primitives → `frontend/src/components/ui/*.tsx`
+   - existing pages → `frontend/src/pages/*` or `frontend/src/App.tsx`
    - design sources → `design/*.pen`
 3. Grep `docs/DECISIONS.md` by the task's keywords (e.g. `auth`, `tailwind`, `form`). List matching decisions with one-line summary.
 4. Read `docs/ARCHITECTURE.md` sections relevant to the task.

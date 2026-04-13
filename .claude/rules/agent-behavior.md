@@ -11,7 +11,7 @@ Applies to all agents. Governs how agents collaborate inside the orchestrator.
 ## Context Discipline
 
 - **Task files are self-contained.** The `## Why` section explains the purpose. Do not hunt for context in other files unless the task file points you there.
-- **Do not read the entire `src/` directory.** Read only what's in Files to Touch.
+- **Do not read the entire `frontend/` or `backend/` tree.** Read only what's in Files to Touch.
 - **DECISIONS.md** — search by keyword (grep for your topic); only PM reads it whole.
 - **ARCHITECTURE.md** — read only the section relevant to your role.
 

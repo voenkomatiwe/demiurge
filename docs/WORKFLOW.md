@@ -202,7 +202,7 @@ Layer 1: ARCHITECTURE.md (≤2000 tokens)    — PM, frontend, backend (section-
 Layer 2: DECISIONS.md (grep by keyword)    — PM whole, others by keyword
 Layer 3: MEMORY_BANK.md (≤300 tokens)      — after compaction recovery
 Layer 4: TASK-xxx.md (self-contained)      — assigned agent, read entirely
-Layer 5: src/ (only "Files to Touch")      — specialist, scope-enforced by hook
+Layer 5: frontend/src/ | backend/src/ (only "Files to Touch")   — specialist, scope-enforced by hook
 ```
 
 ## First Task (Validation)

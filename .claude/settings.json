@@ -19,7 +19,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "echo '## Post-Compact Reminder\\n- Use {{PACKAGE_MANAGER}} as the package manager\\n- Tailwind: semantic classes (bg-primary, not bg-[#hex])\\n- Run {{PACKAGE_MANAGER_RUN}} build && {{PACKAGE_MANAGER_RUN}} lint before marking task as review\\n- Read your task file from docs/tasks/ — do not scan entire src/\\n- Update task status after completing work\\n- Re-read docs/MEMORY_BANK.md to recover active-task state'"
+            "command": "echo '## Post-Compact Reminder\n- Use {{PACKAGE_MANAGER}} as the package manager (bun workspaces: frontend + backend)\n- Tailwind: semantic classes (bg-primary, not bg-[#hex])\n- Run {{PACKAGE_MANAGER_RUN}} build && {{PACKAGE_MANAGER_RUN}} lint from the repo root before marking task as review\n- Read your task file from docs/tasks/ — do not scan the entire frontend/ or backend/ tree\n- Frontend code lives in frontend/src/; backend code lives in backend/src/\n- Update task status after completing work\n- Re-read docs/MEMORY_BANK.md to recover active-task state'"
           }
         ]
       }

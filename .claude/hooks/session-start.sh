@@ -18,7 +18,7 @@ fi
 echo "## Claude Orchestrator — Session Context"
 echo ""
 echo "**Project**: $PROJECT_NAME"
-echo "**Stack**: Fastify + OpenAPI (backend); React + Vite + TS + Tailwind v4 + shadcn/ui (frontend); Better Auth; Pencil for design; Biome for lint/format. See CLAUDE.md for current project stack."
+echo "**Stack**: Bun workspaces monorepo — \`frontend/\` (React + Vite + TS + Tailwind v4 + shadcn/ui), \`backend/\` (Fastify + OpenAPI + Better Auth); Biome for lint/format (root \`biome.json\`). See CLAUDE.md for the filled-in project stack."
 echo "**Docs**: CLAUDE.md, docs/ARCHITECTURE.md, docs/DECISIONS.md, docs/WORKFLOW.md, docs/MEMORY_BANK.md"
 echo ""
 

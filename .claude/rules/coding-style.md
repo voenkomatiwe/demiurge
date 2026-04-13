@@ -1,6 +1,6 @@
 # Coding Style Rules
 
-Applies to all code-producing agents (frontend, backend). Stack defaults below assume the base template: React + Vite + TS + Tailwind v4 + shadcn/ui on the frontend, Fastify + OpenAPI + Better Auth on the backend, Biome for formatting and linting.
+Applies to all code-producing agents (frontend, backend). Stack defaults below assume the base template: a **Bun workspaces monorepo** with `frontend/` (React + Vite + TS + Tailwind v4 + shadcn/ui) and `backend/` (Fastify + OpenAPI + Better Auth) as workspaces, a single shared `biome.json` at the repo root, and all build/lint/format commands run from the root through proxy scripts (`bun run build`, `bun run lint`, `bun run format`).
 
 ## General
 
@@ -20,7 +20,7 @@ Applies to all code-producing agents (frontend, backend). Stack defaults below a
 ## React (frontend)
 
 - **Components**: PascalCase filename = PascalCase component. One component per file.
-- **Hooks**: `use*` prefix. Custom hooks in `src/hooks/`.
+- **Hooks**: `use*` prefix. Custom hooks in `frontend/src/hooks/`.
 - **Props**: Typed with `interface`, destructured in signature.
 - **State**: `useState` for local, external store (Zustand or Redux Toolkit) only when shared across components.
 - **Effects**: Minimize. Prefer derived state. Cleanup always if subscribing.
@@ -36,8 +36,8 @@ Applies to all code-producing agents (frontend, backend). Stack defaults below a
 
 ## shadcn/ui
 
-- Install via `{{PACKAGE_MANAGER_DLX}} shadcn@latest add [component]`.
-- Customize by editing the generated file in `src/components/ui/` directly, not by wrapping.
+- Install from inside the frontend workspace: `cd frontend && {{PACKAGE_MANAGER_DLX}} shadcn@latest add [component]`.
+- Customize by editing the generated file in `frontend/src/components/ui/` directly, not by wrapping.
 - Do not duplicate shadcn primitives — use them.
 
 ## Fastify (backend)

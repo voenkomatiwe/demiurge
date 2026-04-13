@@ -79,7 +79,7 @@ All heuristics are additive — one session can trigger multiple, each independe
 2026-04-10T12:00:00Z | role=frontend | task=TASK-001-frontend | status=approved | transcript=/path/to/transcript.jsonl
 ```
 
-It's the baseline dataset for **future** LLM-based extraction. When heuristics aren't enough, a later job can replay these transcripts and mine richer patterns (e.g., "this project prefers co-located actions in stores" or "backend routes always live under `src/api/<resource>/`"). Until that pipeline exists, the log just grows.
+It's the baseline dataset for **future** LLM-based extraction. When heuristics aren't enough, a later job can replay these transcripts and mine richer patterns (e.g., "this project prefers co-located actions in stores" or "backend routes always live under `backend/src/routes/<resource>/`"). Until that pipeline exists, the log just grows.
 
 ## Enabling LLM extraction (future)
 

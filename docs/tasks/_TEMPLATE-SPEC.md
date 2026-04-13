@@ -23,8 +23,8 @@ _Explicit scope exclusions. PM names at least one thing the specialist should NO
 - [A generalisation we're refusing to add]
 
 ## Files to Touch
-- `path/to/file.tsx` (create | modify | delete)
-- `path/to/another.ts` (create | modify)
+- `frontend/src/components/MyFeature.tsx` (create | modify | delete)
+- `backend/src/routes/my-feature.ts` (create | modify)
 
 ## Acceptance Criteria
 - [ ] [Criterion 1]

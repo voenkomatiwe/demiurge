@@ -24,7 +24,12 @@
 
 ## Structure
 
-- `src/` — source code
+This project is a **Bun workspaces monorepo**. All build, lint, and format commands are run from the repository root.
+
+- `frontend/` — React + Vite workspace (source in `frontend/src/`)
+- `backend/` — Fastify workspace (source in `backend/src/`)
+- `biome.json` — linter/formatter config (root, shared between workspaces)
+- `package.json` — root workspace declaration + proxy scripts (`dev`, `dev:frontend`, `dev:backend`, `build`, `lint`, `format`)
 - `design-system/` — Markdown design artifacts (`MASTER.md` + `pages/*.md`)
 - `design/` — Pencil design files
 - `docs/` — architecture, decisions, tasks
@@ -32,7 +37,7 @@
 
 ## For Agents
 
-- Read ONLY your task file from `docs/tasks/`. Do not scan the entire `src/`.
+- Read ONLY your task file from `docs/tasks/`. Do not scan the entire `frontend/` or `backend/` tree.
 - The "why" context is embedded in the "Why" section of your task file.
 - Project decisions: `docs/DECISIONS.md` (search by tag, do not read entirely).
 - Architecture: `docs/ARCHITECTURE.md`.
