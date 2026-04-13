@@ -6,17 +6,17 @@ A drop-in multi-agent orchestrator template for [Claude Code](https://claude.com
 
 ## Stack assumptions
 
-The template ships opinionated around this stack — the agents, rules, and hooks reference it by default:
+The template ships as a **Bun workspaces monorepo** — the agents, rules, and hooks reference this stack by default:
 
 - **Backend**: Fastify + OpenAPI docs (via `@fastify/swagger`)
 - **Frontend**: React + Vite + TypeScript + Tailwind CSS v4 + shadcn/ui
 - **Auth**: Better Auth (Phone OTP + Magic Link)
-- **Design**: Pencil (`.pen` files)
+- **Design**: Pencil, Markdown, or Figma (choose at install)
 - **Linting / formatting**: Biome
-- **Database**: pick your own (Postgres, SQLite, etc.)
-- **Package manager**: `bun` by default — swap for npm / pnpm / yarn by editing CLAUDE.md
+- **Database**: PostgreSQL (configurable at install)
+- **Package manager**: `bun` (workspaces: `frontend/` + `backend/`)
 
-If your project uses a different stack, edit `CLAUDE.md` after install and the specialists will adapt.
+The CLI prompts for each choice. If your project uses a different stack, the installer writes your answers into `CLAUDE.md` and the specialists adapt.
 
 ## Install
 
@@ -25,24 +25,16 @@ If your project uses a different stack, edit `CLAUDE.md` after install and the s
 npx demiurge
 ```
 
-The CLI will prompt for project name + description, then copy the template files into your current directory.
+The CLI prompts for project name, description, backend, frontend, auth, database, and design tool, then copies the template.
 
-### Non-interactive
-
-```bash
-npx demiurge --yes --project my-app --description "My thing"
-```
-
-### Overwrite existing files
+### CLI options
 
 ```bash
-npx demiurge --force
-```
-
-### Preview without writing
-
-```bash
-npx demiurge --dry-run
+npx demiurge --yes                        # accept all defaults
+npx demiurge --project my-app --design pencil --backend fastify
+npx demiurge --dry-run                    # preview without writing
+npx demiurge --force                      # overwrite existing files
+npx demiurge --help                       # full option list
 ```
 
 ## What gets installed
@@ -51,46 +43,57 @@ npx demiurge --dry-run
 your-project/
 ├── .claude/
 │   ├── agents/              # pm, reviewer, designer, frontend, backend
-│   ├── hooks/               # session-start, scope-check, session-stop, protect-files
+│   ├── hooks/               # session-start, scope-check, session-stop, protect-files, check-deps
 │   ├── rules/               # security, coding-style, agent-behavior
-│   ├── skills/              # context-budget, analyze-repo, multi-execute, security-scan
-│   ├── instincts/           # stub for continuous learning
+│   ├── skills/              # context-budget, analyze-repo, multi-execute, security-scan, + design skill
+│   ├── workflows/           # default.yaml — full-stack pipeline definition
+│   ├── instincts/           # continuous learning (populated over time)
 │   └── settings.json        # hook registrations
 ├── docs/
-│   ├── ARCHITECTURE.md      # skeleton
+│   ├── ARCHITECTURE.md      # skeleton for your architecture
 │   ├── DECISIONS.md         # YAML decisions log
-│   ├── MEMORY_BANK.md       # persistent state
+│   ├── MEMORY_BANK.md       # persistent state (survives /compact)
 │   ├── WORKFLOW.md          # how the orchestrator works
-│   ├── PROJECT_BRIEF.md     # first-run intake questionnaire
+│   ├── intake/              # drop project materials here for PM to process
 │   └── tasks/
 │       ├── _TEMPLATE.md         # owner task template
 │       └── _TEMPLATE-SPEC.md    # specialist task template
+├── design-system/           # (only with --design markdown)
+│   └── MASTER.md            # design tokens, global rules, anti-patterns
+├── frontend/                # workspace stub
+├── backend/                 # workspace stub
 ├── scripts/
 │   ├── run-agent.sh         # launch a specialist on a task
 │   └── convert.sh           # export agents to .agents/ and .codex/
+├── biome.json               # shared Biome config
+├── package.json             # Bun workspaces root + proxy scripts
 └── CLAUDE.md                # project root context
 ```
 
 ## After install
 
-1. **Review `CLAUDE.md`** — the installer already filled in your stack and description. Verify it matches reality.
-2. **Fill `docs/PROJECT_BRIEF.md`** — eight short questions about your product, audience, MVP scope, and constraints. This is what the PM agent reads to understand the project.
-3. **Create your first task**:
+1. **`bun install`** — wires workspaces, installs root devDeps (Biome).
+2. **Review `CLAUDE.md`** — the installer filled in your stack and description. Verify it matches reality.
+3. **Drop project materials into `docs/intake/`** — notes, screenshots, links, PDFs. This is what the PM agent reads to understand the project.
+4. **Generate a brief**:
    ```bash
    claude
-   > use the pm agent to read docs/PROJECT_BRIEF.md and create TASK-001
+   > use the pm agent to read docs/intake/ and generate a brief
    ```
-   The PM will ask clarifying questions if anything is ambiguous, then write `docs/tasks/TASK-001.md`.
-4. **Decompose and ship**:
+   The PM will ask clarifying questions, then write `docs/BRIEF.md`.
+5. **Decompose and ship**:
    ```
    /decompose TASK-001
    ```
-5. *(Optional)* Edit `docs/ARCHITECTURE.md` once your stack is settled — describe your system components and conventions.
+6. *(Optional)* Edit `docs/ARCHITECTURE.md` once your stack is settled.
 
 ## How the workflow works
 
 ```
-Owner creates TASK-001.md
+Owner drops materials into docs/intake/
+   │
+   ▼
+PM generates docs/BRIEF.md → Owner approves
    │
    ▼
 PM decomposes → specialist task files (TASK-001-frontend.md, etc.)
@@ -118,7 +121,7 @@ Done
 | **frontend** | sonnet | Client-side implementation |
 | **backend** | sonnet | API, integrations, server-side logic |
 
-Each agent has: Identity & Memory → Critical Rules → Workflow → Success Metrics → Personality.
+Each agent has: Identity & Memory, Critical Rules, Workflow, Success Metrics, and Personality.
 
 Based on the prompt structure from [msitarzewski/agency-agents](https://github.com/msitarzewski/agency-agents) and the reviewer methodology from [affaan-m/everything-claude-code](https://github.com/affaan-m/everything-claude-code).
 
@@ -127,9 +130,10 @@ Based on the prompt structure from [msitarzewski/agency-agents](https://github.c
 | Hook | When | What |
 |------|------|------|
 | SessionStart | `startup`/`resume` | Loads project summary + active tasks + Memory Bank snapshot |
+| Check deps | SessionStart | Auto-unblocks tasks whose dependencies are now satisfied |
 | Scope check | After Edit/Write | Warns if edited file is not in active task's "Files to Touch" |
 | Protect files | Before Edit/Write | Blocks `.env`, lock files, `.git/`, `.claude/settings*` |
-| Session stop | When agent session ends | Appends timestamp to active task's Session Log (cost via `/cost` or `ccusage`) |
+| Session stop | When agent session ends | Appends timestamp to active task's Session Log + extracts instincts |
 | Post-compact reminder | After `/compact` | Re-injects conventions + Memory Bank pointer |
 
 ## Slash commands
@@ -142,13 +146,12 @@ Based on the prompt structure from [msitarzewski/agency-agents](https://github.c
 
 ## Customization
 
-- **Stack**: Edit `CLAUDE.md` → Stack to reflect your actual tools. All agents read this first.
+- **Stack**: Edit `CLAUDE.md` → Stack section to reflect your actual tools.
 - **Conventions**: Edit `.claude/rules/coding-style.md` to match your project.
 - **Agent behavior**: Edit `.claude/agents/*.md` to add or remove Critical Rules.
 - **Security checks**: Edit `.claude/rules/security.md` for your compliance and threat model.
 - **Task template**: Edit `docs/tasks/_TEMPLATE-SPEC.md` to add fields.
-
-If your stack differs significantly from the defaults (e.g. Python backend instead of Fastify, Vue instead of React), ask the PM agent to re-adapt the specialist prompts on your first task.
+- **Pipeline**: Edit `.claude/workflows/default.yaml` to change stages, add approval gates.
 
 ## Multi-runtime export
 
@@ -156,11 +159,35 @@ If your stack differs significantly from the defaults (e.g. Python backend inste
 scripts/convert.sh
 ```
 
-Generates `.agents/` (Cursor-compatible plain markdown) and `.codex/` (OpenAI Codex layout) from `.claude/agents/`. Source of truth is always `.claude/agents/`.
+Generates `.agents/` (Cursor-compatible plain markdown) and `.codex/` (OpenAI Codex layout) from the agent definitions. Source of truth is always `.claude/agents/`.
+
+## Development (contributing to demiurge)
+
+The source of truth for all agent definitions lives in `agents/`. Claude Code reads from `.claude/` (flat structure). To develop locally:
+
+```bash
+bin/build-local.sh          # sync agents/ → .claude/ + docs/ + design-system/
+bin/build-local.sh --clean  # remove generated dirs first, then sync
+```
+
+### Project structure (source)
+
+```
+agents/
+├── _docs/           → docs/           (architecture, decisions, tasks, workflow)
+├── _scaffold/       → project root    (package.json, biome.json, workspace stubs)
+├── _design-system/  → design-system/  (MASTER.md, pages/)
+├── _shared/         → .claude/        (hooks, rules, workflows, instincts, settings)
+├── pm/              → .claude/agents/pm.md + skills
+├── reviewer/        → .claude/agents/reviewer.md + skills
+├── designer/        → .claude/agents/designer.md + skills
+├── frontend/        → .claude/agents/frontend.md + skills
+└── backend/         → .claude/agents/backend.md + skills
+```
 
 ## Requirements
 
-- Node.js ≥ 18 (for the installer)
+- Node.js >= 18 (for the installer)
 - [Claude Code](https://claude.com/claude-code) installed
 
 ## License
