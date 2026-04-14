@@ -31,7 +31,7 @@ Return (≤ 40 lines total):
 - Components: PascalCase, one per file
 - Fastify routes with schema → OpenAPI
 
-### Relevant DECISIONS.md entries
+### Relevant decisions (via `demiurge decision list`)
 - [id] tag → [one-line summary]
 
 ### Gaps for this task
@@ -45,7 +45,7 @@ Return (≤ 40 lines total):
    - shadcn primitives → `frontend/src/components/ui/*.tsx`
    - existing pages → `frontend/src/pages/*` or `frontend/src/App.tsx`
    - design sources → `design/*.pen`
-3. Grep `docs/DECISIONS.md` by the task's keywords (e.g. `auth`, `tailwind`, `form`). List matching decisions with one-line summary.
+3. Query decisions by the task's keywords via `demiurge decision list --tags <keyword>` (e.g. `auth`, `tailwind`, `form`). List matching decisions with one-line summary.
 4. Read `docs/ARCHITECTURE.md` sections relevant to the task.
 5. Cross-reference task requirements → identify what exists vs. what must be created.
 6. Output the map in the format above.
@@ -65,8 +65,8 @@ Return (≤ 40 lines total):
 ## When PM Invokes
 
 Step 2 of the PM decomposition workflow:
-1. Read parent task entirely
+1. Fetch parent task via `demiurge task get <ID>`
 2. **Invoke `analyze-repo` skill** ← here
-3. Read DECISIONS.md (entirely, PM only)
+3. Query all relevant decisions via `demiurge decision list` (PM only)
 4. Identify specialists needed
-5. Create task files with grounded references
+5. Create subtasks with grounded references via `demiurge task create`

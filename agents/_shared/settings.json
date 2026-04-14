@@ -19,7 +19,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "echo '## Post-Compact Reminder\n- Use {{PACKAGE_MANAGER}} as the package manager (bun workspaces: frontend + backend)\n- Tailwind: semantic classes (bg-primary, not bg-[#hex])\n- Run {{PACKAGE_MANAGER_RUN}} build && {{PACKAGE_MANAGER_RUN}} lint from the repo root before marking task as review\n- Read your task file from docs/tasks/ — do not scan the entire frontend/ or backend/ tree\n- Frontend code lives in frontend/src/; backend code lives in backend/src/\n- Update task status after completing work\n- Re-read docs/MEMORY_BANK.md to recover active-task state'"
+            "command": "echo '## Post-Compact Reminder\n- Use {{PACKAGE_MANAGER}} as the package manager (bun workspaces: frontend + backend)\n- Tailwind: semantic classes (bg-primary, not bg-[#hex])\n- Run {{PACKAGE_MANAGER_RUN}} build && {{PACKAGE_MANAGER_RUN}} lint from the repo root before marking task as review\n- Read your task via `demiurge task get <id>` — do not scan the entire frontend/ or backend/ tree\n- Frontend code lives in frontend/src/; backend code lives in backend/src/\n- Update task status via `demiurge task update <id> --status <status>` after completing work\n- Read `demiurge memory get` to recover active-task state\n- Use `demiurge task list --status in-progress` for active tasks'"
           }
         ]
       }

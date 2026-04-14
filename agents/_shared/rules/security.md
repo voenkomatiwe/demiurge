@@ -60,7 +60,7 @@ Applies to all agents. Non-negotiable baseline. Extend for your project's threat
 - Identify PII in your project: names, emails, phones, government IDs, payment details, location data.
 - Encrypt at rest via your database's native mechanisms.
 - **Logs must never contain full PII.** Mask (e.g. `+1-XXX-***-1234`, `user@**.com`).
-- Respect regional regulations (GDPR, CCPA, etc.) — document requirements in `docs/DECISIONS.md`.
+- Respect regional regulations (GDPR, CCPA, etc.) — document requirements via `demiurge decision add --title "..." --decision "..."`.
 
 ## Violations
 

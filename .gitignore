@@ -36,3 +36,9 @@ design-system/
 __pycache__/
 *.py[cod]
 *$py.class
+
+# Brainstorming visual companion sessions
+.superpowers/
+
+# Demiurge runtime data
+.demiurge/

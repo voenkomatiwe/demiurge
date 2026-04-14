@@ -6,16 +6,16 @@
 Owner drops materials into docs/intake/
     │
     ▼
-PM reads intake → generates Brief (docs/BRIEF.md)
+demiurge intake docs/* → PM generates Brief (docs/BRIEF.md)
     │
     ▼ (Owner approves Brief)
-PM creates parent task (TASK-XXX.md)
+PM creates parent task (demiurge task create)
     │
     ▼
-PM decomposes → lightweight task files for specialists (Goal + Why + Boundaries)
+PM decomposes → lightweight subtasks for specialists (Goal + Why + Boundaries)
     │
     ▼ (Owner approves decomposition)
-Specialists plan their own implementation (## Plan in task file)
+Specialists plan their own implementation
     │
     ▼
 Specialists work (in parallel via worktrees if independent)
@@ -50,11 +50,15 @@ Drop files into `docs/intake/`:
 - Screenshots, mockups, competitor examples
 - Links, references, existing specs
 
+Then run:
+```bash
+demiurge intake docs/*
+```
+
 ### 2. PM Generates Brief
 
 ```bash
-claude
-> use the pm agent to read docs/intake/ and generate a brief
+demiurge run pm
 ```
 
 PM reads everything in `docs/intake/`, synthesizes `docs/BRIEF.md`.
@@ -64,68 +68,76 @@ PM reads everything in `docs/intake/`, synthesizes `docs/BRIEF.md`.
 ### 3. PM Creates and Decomposes Task
 
 ```bash
-> use the pm agent to create a task from the approved brief
+demiurge task create --title "Parent task" --status new
 ```
 
-or
+PM creates a parent task, then decomposes it into specialist subtasks:
 
 ```bash
-/decompose TASK-001
+demiurge task create --title "TASK-001-designer" --parent TASK-001 --assigned designer
+demiurge task create --title "TASK-001-frontend" --parent TASK-001 --assigned frontend
+demiurge task create --title "TASK-001-backend"  --parent TASK-001 --assigned backend
 ```
 
-PM creates lightweight specialist tasks:
-- `docs/tasks/TASK-XXX-designer.md`
-- `docs/tasks/TASK-XXX-frontend.md`
-- `docs/tasks/TASK-XXX-backend.md`
+Each subtask has only: **Why**, **Goal**, **Not Doing**, **Design Reference**. No implementation details — that's the specialist's job.
 
-Each task has only: **Why**, **Goal**, **Not Doing**, **Design Reference**. No implementation details — that's the specialist's job.
-
-**Approve**: Review the task files. If changes needed — tell the PM.
+**Approve**: Review the tasks via `demiurge task list`. If changes needed — tell the PM.
 
 ### 4. Specialists Plan and Work
 
-Each specialist reads their task, writes their own `## Plan`, then executes:
+Each specialist reads their task via `demiurge task get TASK-001-frontend`, plans, then executes:
 
 Sequentially (if there are dependencies):
 ```bash
-> use the designer agent to work on docs/tasks/TASK-XXX-designer.md
+demiurge run designer --task TASK-001-designer
 # → Reviewer checks → PM approves
-> use the frontend agent to work on docs/tasks/TASK-XXX-frontend.md
+demiurge run frontend --task TASK-001-frontend
 ```
 
 In parallel (if no dependencies):
 ```bash
 # Terminal 1:
-claude
-> use the frontend agent to work on docs/tasks/TASK-XXX-frontend.md
+demiurge run frontend --task TASK-001-frontend
 
 # Terminal 2:
-claude --worktree backend-work
-> use the backend agent to work on docs/tasks/TASK-XXX-backend.md
+demiurge run backend --task TASK-001-backend
+```
+
+Status updates happen via CLI:
+```bash
+demiurge task update TASK-001-frontend --status in-progress
 ```
 
 ### 5. Code Review (Reality Check)
 
 After each specialist finishes, the reviewer agent verifies the code:
 ```bash
-> use the reviewer agent to review docs/tasks/TASK-XXX-frontend.md
+demiurge run reviewer --task TASK-001-frontend
 ```
 
 Reviewer checks: build, lint, security, accessibility, convention adherence.
-Writes findings into the task file under "Review" section.
 
 ### 6. PM Review
 
 PM reviews task completion against the Goal:
 ```bash
-> use the pm agent to review docs/tasks/TASK-XXX-frontend.md
+demiurge run pm --task TASK-001-frontend
 ```
 
 Statuses: `approved` → done, `revision` → specialist reworks with specific feedback.
 
+```bash
+demiurge task update TASK-001-frontend --status approved
+# or
+demiurge task update TASK-001-frontend --status revision
+```
+
 ### 7. Completion
 
-Owner reviews the overall result. If everything is good — task is `done`.
+Owner reviews the overall result. If everything is good:
+```bash
+demiurge task update TASK-001 --status done
+```
 
 ## Task Statuses
 
@@ -142,27 +154,28 @@ cancelled   → dropped (usually cascaded from a cancelled parent)
 
 ## Revision Format (when result is rejected)
 
-Reviewer adds to the task file:
+PM or reviewer records revision feedback via the task update:
 
-```markdown
-## Revision #1
-**Date**: 2026-04-09
-**Reviewer**: Owner | PM
-**Issues**:
-- [Specific problem 1]
-- [Specific problem 2]
-**Expected fix**: [What outcome is needed]
+```bash
+demiurge task update TASK-001-frontend --status revision --note "Issue: [description]. Expected fix: [what outcome is needed]"
 ```
 
-## Slash Commands
-
-Custom skills for fast orchestration (type in Claude Code):
+## CLI Quick Reference
 
 | Command | What it does |
 |---------|-------------|
-| `/decompose TASK-001` | PM decomposes task into lightweight specialist subtasks |
-| `/review-task TASK-001-frontend` | Full review pipeline: reviewer agent → PM agent |
-| `/task-status` | Dashboard: all task statuses, blockers, dependencies |
+| `demiurge intake docs/*` | Process intake materials |
+| `demiurge task list` | List all tasks |
+| `demiurge task list --status in-progress` | Filter tasks by status |
+| `demiurge task get TASK-001` | View a specific task |
+| `demiurge task create --title "..."` | Create a new task |
+| `demiurge task update TASK-001 --status review` | Update task status |
+| `demiurge task delete TASK-001` | Delete a task |
+| `demiurge memory get` | Read current project state |
+| `demiurge memory set "..."` | Update project state |
+| `demiurge decision add` | Record a new decision |
+| `demiurge decision list` | List all decisions |
+| `demiurge run <agent> --task <id>` | Launch an agent on a task |
 
 ## Useful Commands
 
@@ -173,13 +186,8 @@ claude
 # Work in an isolated worktree
 claude --worktree feature-name
 
-# Resume a session (Memory Bank auto-loaded via SessionStart hook)
+# Resume a session (memory auto-loaded via demiurge memory get)
 claude --resume
-
-# Launch a specialist on a specific task with active-task pinning
-scripts/run-agent.sh frontend TASK-001-frontend
-scripts/run-agent.sh pm       TASK-001
-scripts/run-agent.sh reviewer TASK-001-frontend
 
 # Agents are automatically available from .claude/agents/
 ```
@@ -190,32 +198,38 @@ These run automatically — no manual action needed:
 
 | Hook | When | What |
 |------|------|------|
-| **Session start** | `startup`/`resume` | Loads project summary + active tasks + Memory Bank snapshot |
+| **Session start** | `startup`/`resume` | Loads project summary + active tasks via CLI |
 | **Auto-lint** | After Edit/Write on source files | Runs your project's linter (configure in `.claude/settings.json`) |
 | **Protected files** | Before Edit/Write | Blocks .env, lock files, node_modules, .claude/settings |
-| **Session stop** | When agent session ends | Appends a timestamp to the active task's "Session Log" section |
-| **Post-compact reminder** | After context compaction | Re-injects project conventions + Memory Bank pointer |
+| **Post-compact reminder** | After context compaction | Re-injects project conventions + memory pointer |
 | **Notification** | When Claude waits for input | macOS notification |
 
-## Memory Bank (`docs/MEMORY_BANK.md`)
+## Memory Bank
 
-Persistent state that survives compaction. PM maintains it:
+Persistent state that survives compaction. PM maintains it via CLI:
+
+```bash
+demiurge memory get          # read current state
+demiurge memory set "..."    # update (overwrites, not appends)
+```
+
+Contents:
 - Active task + current step
 - Completed steps checklist
-- Key decisions this session (refs to DECISIONS.md)
+- Key decisions this session (refs to decision IDs)
 - Open blockers with one-line reasons
 
-Budget ≤ 300 tokens. Rewritten, never accumulated.
+Budget: ≤300 tokens. Rewritten, never accumulated.
 
-On `claude --resume` → SessionStart hook injects the first 30 lines automatically.
+On `claude --resume` → SessionStart hook runs `demiurge memory get` automatically.
 
 ## Context Layers (how agents save tokens)
 
 ```
 Layer 0: CLAUDE.md (≤500 tokens)           — all agents, auto-loaded
 Layer 1: ARCHITECTURE.md (≤2000 tokens)    — PM, frontend, backend (section-scoped)
-Layer 2: DECISIONS.md (grep by keyword)    — PM whole, others by keyword
-Layer 3: MEMORY_BANK.md (≤300 tokens)      — after compaction recovery
-Layer 4: TASK-xxx.md (lightweight)         — assigned agent, read entirely
+Layer 2: demiurge decision list (by tag)   — PM whole, others by keyword
+Layer 3: demiurge memory get (≤300 tokens) — after compaction recovery
+Layer 4: demiurge task get <id>            — assigned agent, read entirely
 Layer 5: frontend/src/ | backend/src/      — specialist decides what to read
 ```

@@ -19,7 +19,7 @@ echo "## Claude Orchestrator — Session Context"
 echo ""
 echo "**Project**: $PROJECT_NAME"
 echo "**Stack**: Bun workspaces monorepo — \`frontend/\` (React + Vite + TS + Tailwind v4 + shadcn/ui), \`backend/\` (Fastify + OpenAPI + Better Auth); Biome for lint/format (root \`biome.json\`). See CLAUDE.md for the filled-in project stack."
-echo "**Docs**: CLAUDE.md, docs/ARCHITECTURE.md, docs/DECISIONS.md, docs/WORKFLOW.md, docs/MEMORY_BANK.md"
+echo "**Docs**: CLAUDE.md, docs/ARCHITECTURE.md | **CLI**: demiurge task list, demiurge memory get, demiurge decision list"
 echo ""
 
 if [ -d "$TASKS_DIR" ]; then
@@ -39,7 +39,7 @@ if [ -d "$TASKS_DIR" ]; then
     found_any=1
   done
   if [ "$found_any" = "0" ]; then
-    echo "_No tasks yet. Create one via \`cp docs/tasks/_TEMPLATE.md docs/tasks/TASK-XXX.md\`._"
+    echo "_No tasks yet. Create one via \`demiurge task create --title \"...\"\`._"
   fi
   echo ""
 fi
@@ -58,11 +58,10 @@ if [ -d "$TASKS_DIR" ]; then
   fi
 fi
 
-# Memory Bank (compaction recovery)
-if [ -f "$PROJECT_DIR/docs/MEMORY_BANK.md" ]; then
+# Memory Bank (compaction recovery) — now via CLI
+if command -v demiurge &>/dev/null; then
   echo "### Memory Bank snapshot"
-  # First 30 lines is enough for current state
-  head -30 "$PROJECT_DIR/docs/MEMORY_BANK.md"
+  demiurge memory get 2>/dev/null || echo "_No memory state yet._"
   echo ""
 fi
 

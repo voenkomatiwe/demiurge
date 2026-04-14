@@ -13,8 +13,7 @@ Verify context consumption stays within the orchestrator's default budgets.
 |------|----------------|----------------------------------|
 | `CLAUDE.md` | ≤ 500 | ≤ 2000 |
 | `docs/ARCHITECTURE.md` | ≤ 2000 | ≤ 8000 |
-| `docs/MEMORY_BANK.md` | ≤ 300 | ≤ 1200 |
-| Any single task file | soft 1500 | ≤ 6000 |
+| Any single task (via `demiurge task get`) | soft 1500 | ≤ 6000 |
 
 Rules of thumb: 1 token ≈ 4 characters ≈ 0.75 English words.
 
@@ -29,7 +28,7 @@ Rules of thumb: 1 token ≈ 4 characters ≈ 0.75 English words.
 |------|-------|-------------|--------|--------|
 | CLAUDE.md | 1400 | ~350 | 500 | ✅ |
 | docs/ARCHITECTURE.md | 2550 | ~640 | 2000 | ✅ |
-| docs/MEMORY_BANK.md | 1180 | ~295 | 300 | ⚠ near |
+| demiurge memory get | ~1180 | ~295 | 300 | ⚠ near |
 ```
 
 4. For any file `⚠ near` (>80% of budget) or `❌ over`:
@@ -37,9 +36,9 @@ Rules of thumb: 1 token ≈ 4 characters ≈ 0.75 English words.
    - Suggest 2–3 concrete trimming actions (e.g. "move the API contract example to a separate doc and link").
    - Do NOT trim automatically — propose, let Owner decide.
 
-5. Also scan `docs/tasks/TASK-*.md` for outliers:
-   - Any task file > 6000 chars → flag, it probably has bloated Review/Revision history.
-   - Suggest archiving old Revision blocks into a `.history` file if needed.
+5. Also check tasks via `demiurge task list` for outliers:
+   - Any task with excessively long description → flag, it probably has bloated Review/Revision history.
+   - Suggest trimming old revision notes if needed.
 
 ## When to Run
 

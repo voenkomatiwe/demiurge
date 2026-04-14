@@ -26,19 +26,31 @@
 
 This project is a **Bun workspaces monorepo**. All build, lint, and format commands are run from the repository root.
 
-- `frontend/` — React + Vite workspace (source in `frontend/src/`)
-- `backend/` — Fastify workspace (source in `backend/src/`)
-- `biome.json` — linter/formatter config (root, shared between workspaces)
-- `package.json` — root workspace declaration + proxy scripts (`dev`, `dev:frontend`, `dev:backend`, `build`, `lint`, `format`)
-- `docs/intake/` — raw project materials (drop files here for PM to process)
-- `docs/` — architecture, decisions, tasks, brief
-- `.claude/agents/` — AI orchestrator agents (pm, reviewer, designer, frontend, backend)
+- `packages/core/` — shared logic: types, SQLite DB, adapters, services, executors
+- `backend/` — Fastify REST API + SPA static serving
+- `frontend/` — React + Vite dashboard SPA
+- `cli/` — CLI tool (`demiurge` commands)
+- `agents/` — AI agent prompts and skills (pm, reviewer, designer, frontend, backend)
+- `.demiurge/data.db` — SQLite database (tasks, sessions, decisions, memory)
+- `demiurge.config.json` — executor and model configuration
+- `biome.json` — linter/formatter config (root, shared)
+- `.claude/` — hooks, rules, workflows, skills
 
 ## For Agents
 
-- Read your task file from `docs/tasks/`. PM gives you Goal + Why + Boundaries.
-- You plan your own implementation under `## Plan` in the task file.
+- Your task is provided in the compiled prompt. PM gives you Goal + Why + Boundaries + Workspace.
+- You plan your own implementation and update progress via CLI:
+  ```bash
+  demiurge task update <TASK-ID> --status in-progress
+  demiurge task update <TASK-ID> --plan - <<'EOF'
+  Your plan here...
+  EOF
+  demiurge task update <TASK-ID> --progress - <<'EOF'
+  Your progress notes...
+  EOF
+  demiurge task update <TASK-ID> --status review
+  ```
 - You decide file paths, component structure, and approach within the project stack.
-- Project decisions: `docs/DECISIONS.md` (search by tag, do not read entirely).
-- Architecture: `docs/ARCHITECTURE.md`.
-- After completing work: update your task file status to `review`.
+- Work ONLY in directories listed in your task's workspace field.
+- Record decisions: `demiurge decision add --title "..." --decision "..." --tags tag1,tag2`
+- After completing work: `demiurge task update <TASK-ID> --status review`

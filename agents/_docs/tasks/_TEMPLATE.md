@@ -1,3 +1,5 @@
+> **Note:** This template is for reference only. Tasks are now stored in SQLite and managed via `demiurge task` commands. See `demiurge task create --help`.
+
 # TASK-XXX: [Task Title]
 
 **Status**: new

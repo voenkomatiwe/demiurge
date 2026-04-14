@@ -11,7 +11,7 @@ Run 2+ independent specialist tasks in parallel. Based on the "many brains, many
 
 Only when all of these are true:
 1. Two or more tasks are in `new`/`in-progress` and independent (no dependency chain).
-2. The tasks touch **disjoint file sets** (`## Files to Touch` do not overlap).
+2. The tasks touch **disjoint workspaces** (workspace fields from `demiurge task get <ID>` do not overlap).
 3. No shared state writes (DB migrations, config files, package.json).
 
 If any fails → run sequentially. The rule is **one file, one owner**.
@@ -26,7 +26,7 @@ scripts/run-agent.sh frontend TASK-001-frontend
 
 # In a second terminal, isolated worktree for backend
 cd $(git worktree add ../worktree-backend -b backend-TASK-001)
-ACTIVE_TASK=TASK-001-backend claude "use the backend agent to work on docs/tasks/TASK-001-backend.md"
+ACTIVE_TASK=TASK-001-backend claude "use the backend agent to work on TASK-001-backend"
 ```
 
 PM merges the worktrees after both pass review.
@@ -34,8 +34,8 @@ PM merges the worktrees after both pass review.
 ## Steps (PM executes)
 
 1. **Verify independence**:
-   - Cross-check `## Files to Touch` for overlaps. Abort if any file appears in ≥2 tasks.
-   - Cross-check `## Dependencies`. All prerequisites must be `done`/`approved`.
+   - Cross-check workspace fields (from `demiurge task get <ID>`) for overlaps. Abort if any workspace appears in ≥2 tasks.
+   - Cross-check dependencies field (from `demiurge task get <ID>`). All prerequisites must be `done`/`approved`.
 2. **Create worktrees**:
    ```bash
    for task in TASK-001-frontend TASK-001-backend; do

@@ -65,7 +65,7 @@ All heuristics are additive — one session can trigger multiple, each independe
 
 ## How reading works
 
-`.claude/hooks/session-start.sh` detects the currently-active task (first `in-progress` task in `docs/tasks/`), derives its role from the filename, and prints every instinct for that role with `confidence ≥ 0.5`. Low-confidence instincts are hidden to avoid noise.
+`.claude/hooks/session-start.sh` detects the currently-active task (via `demiurge task list --status in-progress`), derives its role, and prints every instinct for that role with `confidence ≥ 0.5`. Low-confidence instincts are hidden to avoid noise.
 
 **Threshold**: `confidence ≥ 0.5` means `observations ≥ 3`. A pattern needs at least three independent hits before it influences agent behavior.
 

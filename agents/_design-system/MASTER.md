@@ -2,7 +2,7 @@
 
 > Source of truth for design tokens, global rules, and anti-patterns.
 > Page-specific overrides live in `design-system/pages/<page>.md`.
-> **Hard cap: 500 lines.** If this file grows past that, move rationale to `docs/DECISIONS.md` instead of bloating the master.
+> **Hard cap: 500 lines.** If this file grows past that, move rationale to a decision (`demiurge decision add`) instead of bloating the master.
 
 ## Domain & Tone
 
@@ -101,7 +101,7 @@ Single light-mode palette. Dark mode is **opt-in** — see the **Dark Mode** sec
 
 ### Shadows
 
-Elevation scale used by cards, popovers, dialogs, and toasts. Agents **must not** write arbitrary `shadow-[0_4px_...]` values — pick one from this table or add a new tier via DECISIONS.md.
+Elevation scale used by cards, popovers, dialogs, and toasts. Agents **must not** write arbitrary `shadow-[0_4px_...]` values — pick one from this table or add a new tier via `demiurge decision add`.
 
 | Token | Usage |
 |---|---|
@@ -114,7 +114,7 @@ Elevation scale used by cards, popovers, dialogs, and toasts. Agents **must not*
 
 ### Z-Index
 
-Layering scale. Never hardcode `z-[9999]`. Add a new tier only via DECISIONS.md.
+Layering scale. Never hardcode `z-[9999]`. Add a new tier only via `demiurge decision add`.
 
 | Token | Value | Usage |
 |---|---|---|
@@ -160,7 +160,7 @@ Layering scale. Never hardcode `z-[9999]`. Add a new tier only via DECISIONS.md.
 > **Skip this section entirely** unless the project brief asks for dark mode. When it does:
 > 1. Duplicate the Colors table with a `Dark` column alongside the light value.
 > 2. Wire the `.dark` class per shadcn/ui convention in `frontend/src/styles/globals.css`.
-> 3. Add a DECISIONS.md entry documenting the activation strategy (`auto via prefers-color-scheme` vs. `user toggle` vs. `both`).
+> 3. Add a decision via `demiurge decision add` documenting the activation strategy (`auto via prefers-color-scheme` vs. `user toggle` vs. `both`).
 > 4. Verify every foreground pair meets the same a11y contrast thresholds in dark mode.
 
 ```
@@ -185,6 +185,6 @@ TBD — palette twin goes here when the project enables dark mode.
 ## References
 
 - [Project brief](../docs/BRIEF.md)
-- [Architecture decisions](../docs/DECISIONS.md)
+- Architecture decisions: `demiurge decision list` (or `demiurge decision list --tag design`)
 - Frontend primitives: `frontend/src/components/ui/` (shadcn)
 - Composed components: `frontend/src/components/`

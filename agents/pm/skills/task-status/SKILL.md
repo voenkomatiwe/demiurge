@@ -1,6 +1,6 @@
 ---
 name: task-status
-description: Show the current status of all tasks in docs/tasks/. Usage /task-status
+description: Show the current status of all tasks. Usage /task-status
 ---
 
 # Task Status Dashboard
@@ -9,9 +9,9 @@ Show the current status of all tasks.
 
 ## Steps
 
-1. List all files in `docs/tasks/` (exclude templates starting with `_`)
-2. For each task file, read ONLY the frontmatter (first 10 lines) to extract:
-   - Task ID and title (from `# heading`)
+1. Run `demiurge task list` to fetch all tasks with their metadata.
+2. Extract from each task:
+   - Task ID and title
    - Status
    - Assigned to
    - Parent task

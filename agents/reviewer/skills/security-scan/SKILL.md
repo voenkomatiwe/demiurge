@@ -70,7 +70,7 @@ Grep for:
    - **CRITICAL** → blocks approval, task goes to `revision`.
    - **HIGH** → must be addressed or explicitly waived by PM.
    - **MEDIUM** → log in review, fix if cheap.
-4. Write findings into the task file's `## Review` section using this sub-format:
+4. Write findings into the task via `demiurge task update <ID> --notes "..."` using this sub-format:
 
 ```markdown
 ### Security scan
@@ -89,6 +89,6 @@ Grep for:
 ## Escalation
 
 If a CRITICAL finding involves secrets or auth:
-1. Set task status to `revision` immediately.
-2. Notify the Owner in the task file (not just the specialist).
+1. Set task status to `revision` immediately via `demiurge task update <ID> --status revision`.
+2. Notify the Owner via task notes (not just the specialist).
 3. If a real secret leaked into git history → rotation required.
