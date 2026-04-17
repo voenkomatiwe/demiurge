@@ -13,7 +13,7 @@ spawns-issues-on-change:
 
 # Web Data Model
 
-Persistent entities, their relationships, and how we evolve the schema. This is the backend's source of truth; frontend sees it only through `docs/web/api.md`.
+Persistent entities, their relationships, and how we evolve the schema. This is the backend's source of truth; frontend sees it only through `api.md` (in this app's docs folder).
 
 ## Database
 

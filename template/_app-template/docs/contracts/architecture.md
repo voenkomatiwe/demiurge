@@ -76,7 +76,7 @@ For each: purpose, address (per network), trust assumptions.
 
 ## Boundary with web
 
-The web backend talks to contracts via the ABIs in `docs/contracts/interfaces.md`. **That file is the source of truth** — any ABI or event signature change there is a breaking change to the web.
+The web backend talks to contracts via the ABIs in `interfaces.md` (in this app's docs folder). **That file is the source of truth** — any ABI or event signature change there is a breaking change to the web.
 
 ## Gas and economics
 

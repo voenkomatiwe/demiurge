@@ -23,7 +23,7 @@ Raw input materials provided before and during project work: client briefs, tech
 Example row (delete once real entries exist):
 
 | sources/brief.pdf | 2026-04-17 | @alice | client brief | docs/vision.md, docs/scope.md | #1, #2 | — |
-| sources/wireframes/login.png | 2026-04-17 | @bob | wireframe | docs/web/architecture.md | #4 | — |
+| sources/wireframes/login.png | 2026-04-17 | @bob | wireframe | docs/apps/landing/architecture.md | #4 | — |
 -->
 
 ## Layout conventions

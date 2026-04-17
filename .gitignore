@@ -7,3 +7,5 @@ node_modules/
 
 # npm artifacts
 create-demiurge-*.tgz
+
+/docs

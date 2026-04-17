@@ -24,7 +24,7 @@ Content types, compression.
 
 ## Authentication
 
-See `docs/web/architecture.md#authentication` for issuance. This section covers how the client proves identity on each request.
+See `architecture.md#authentication` (in this app's docs folder) for issuance. This section covers how the client proves identity on each request.
 
 - Header / cookie:
 - Expiry behaviour:

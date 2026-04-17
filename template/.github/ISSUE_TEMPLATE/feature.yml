@@ -51,7 +51,7 @@ body:
       description: |
         Paths (with anchors when possible) into `docs/`. At least one required.
         Example:
-          - docs/web/architecture.md#authentication
+          - docs/apps/backend/architecture.md#authentication
           - docs/web/decisions/0002-auth-provider.md
       placeholder: "- docs/..."
     validations:

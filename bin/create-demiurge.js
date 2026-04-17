@@ -1,5 +1,7 @@
 #!/usr/bin/env node
-import('../src/index.js').catch((e) => {
-  console.error(e);
+import { runCli } from "../src/index.js";
+
+runCli(process.argv.slice(2)).catch((e) => {
+  console.error(e.stack || e.message);
   process.exit(1);
 });

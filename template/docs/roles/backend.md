@@ -5,33 +5,40 @@ kind: role-card
 
 # Backend Role
 
-Your zone: **`backend/`** — the Fastify API.
-Off-limits: `frontend/`, `contracts/`, `docs/sources/` (read-only).
+Your zone: the apps listed in "Your workspace" below — each is a backend-role app.
+Off-limits: other roles' apps, `docs/sources/` (read-only), shared `docs/web/`
+convention files except to *read* them.
 
 ## Read before your first task
 
 1. `docs/vision.md`
 2. `docs/scope.md`
 3. `docs/web/stack.md`
-4. `docs/web/architecture.md` (especially **Backend layer**, **Data flow**, **Authentication**)
-5. `docs/web/api.md` — you **own** this file
-6. `docs/web/data-model.md` — you **own** this file
+4. `docs/apps/<your-app>/architecture.md` — the app you're claiming an issue on
+5. `docs/apps/<your-app>/api.md` — you **own** this file
+6. `docs/apps/<your-app>/data-model.md` — you **own** this file
 7. `docs/web/security.md` — required reading, no exceptions
 8. **`docs/web/references/backend-code-style.md`** — folder layout, plugin/handler/service patterns, error handling, validation, testing, logging. Authoritative style reference; read before writing code
 9. `grep -rli "backend\|api\|data" docs/web/decisions/`
+
+## Your workspace
+
+<!-- apps:start -->
+_No apps yet._
+<!-- apps:end -->
 
 ## You own these docs
 
 When these files are edited, you are the person to review the PR — even if you didn't write it:
 
-- `docs/web/api.md`
-- `docs/web/data-model.md`
+- `docs/apps/<your-app>/api.md`
+- `docs/apps/<your-app>/data-model.md`
 - `docs/web/security.md` (co-owned with reviewers)
 
 ## Boundary with other roles
 
-- **Frontend**: the HTTP contract lives in `docs/web/api.md`. When you change it — add, remove, rename, or change a shape — bump the OpenAPI spec in the same PR.
-- **Smart contracts**: on-chain interactions go through `docs/contracts/interfaces.md`. Addresses, ABIs, and events live there. Never hardcode addresses.
+- **Frontend**: the HTTP contract lives in `docs/apps/<your-app>/api.md`. When you change it — add, remove, rename, or change a shape — bump the OpenAPI spec in the same PR.
+- **Smart contracts**: on-chain interactions go through `docs/apps/<contracts-app>/interfaces.md`. Addresses, ABIs, and events live there. Never hardcode addresses.
 - **PM**: new capabilities start as issues in Project Status `Blocked` (grooming). Don't implement without one.
 
 ## Workflow
@@ -64,7 +71,7 @@ gh pr create --fill
 - [ ] Tests: unit for services, integration for routes
 - [ ] No secrets or credentials in logs
 - [ ] Migration included if data-model changed (and it's zero-downtime safe)
-- [ ] `docs/web/api.md` / `docs/web/data-model.md` updated if contract changed
+- [ ] `docs/apps/<your-app>/api.md` / `docs/apps/<your-app>/data-model.md` updated if contract changed
 - [ ] Rate limiting considered for any new public endpoint
 
 ## Common tasks

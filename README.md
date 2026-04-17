@@ -57,6 +57,29 @@ In short:
 - `CODEOWNERS` — path → team ownership
 - `CLAUDE.md` — navigation table for AI agents working with Claude Code
 
+## Add apps incrementally
+
+After scaffolding, add apps one at a time:
+
+```bash
+cd my-project
+bun x demiurge add app landing --role=frontend
+bun x demiurge add app api --role=backend
+bun x demiurge add app vault --role=smartcontract
+```
+
+Each `add app` creates:
+
+- `apps/<name>/` — your code lives here; pick any toolchain.
+- `docs/apps/<name>/` — per-app architecture + role-specific docs (api, data-model, interfaces).
+- Registry entry in `.demiurge/apps.yml` (source of truth).
+- `apps/README.md` regenerated with a table of all apps.
+- `area:apps/<name>` label in `.github/labels.yml`.
+- Placeholder CODEOWNERS entries (will be wired to real teams once subsystem 2 adds `team.yml`).
+- The "Your workspace" section of `docs/roles/<role>.md` regenerated.
+
+Roles that own code: `frontend`, `backend`, `smartcontract`. Other roles don't own apps.
+
 ## Develop
 
 ```bash

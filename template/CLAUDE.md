@@ -14,13 +14,13 @@ Don't read the whole docs tree. Use this table — pick one row, read one file, 
 |--------------|-----------|
 | Understand the product and goals | `docs/vision.md` |
 | See what's in / out of MVP | `docs/scope.md` |
+| List all apps in the project | `apps/README.md` (or `.demiurge/apps.yml`) |
 | See the original client brief or spec | `docs/sources/README.md` (manifest), then the file it points to |
-| Understand system architecture (web) | `docs/web/architecture.md` |
-| Understand on-chain architecture | `docs/contracts/architecture.md` |
+| Understand a specific app | `docs/apps/<name>/architecture.md` |
 | Look up the tech stack + versions | `docs/<domain>/stack.md` |
-| Find an API contract | `docs/web/api.md` |
-| Find a contract interface or event | `docs/contracts/interfaces.md` |
-| Understand the data model | `docs/web/data-model.md` |
+| Find an API contract (backend app) | `docs/apps/<name>/api.md` |
+| Find a contract interface or event | `docs/apps/<name>/interfaces.md` |
+| Understand the data model (backend app) | `docs/apps/<name>/data-model.md` |
 | Find an architectural decision | `grep -rli "<keyword>" docs/*/decisions/` |
 | Find the design system (tokens, global rules) | `docs/design/system.md` |
 | Find a page-specific design override | `docs/design/pages/<route>.md` |

@@ -113,6 +113,7 @@ prune_domain() {
   local domain="$1"
   info "Removing docs/$domain/ and $domain-specific entries..."
   rm -rf "docs/$domain"
+  rm -rf "_app-template/docs/$domain" 2>/dev/null || true
   rm -f "docs/roles/${domain}.md" 2>/dev/null || true
   # Role pruning: these roles only exist within a domain
   case "$domain" in
@@ -239,7 +240,7 @@ Bootstrap the project documentation so every role has enough context to start wo
 3. Synthesize:
    - `docs/vision.md` — problem, users, success criteria
    - `docs/scope.md` — in / out of MVP
-   - `docs/<domain>/architecture.md` — fill out the sections relevant to the sources
+   - For each app you'll build, run `bun x demiurge add app <name> --role=<role>`; then fill `docs/apps/<name>/architecture.md` with the relevant structure.
 4. Link sources in each synthesized doc via `based-on:` frontmatter.
 5. Open follow-up issues per domain for the first implementation tasks.
 
@@ -247,7 +248,7 @@ Bootstrap the project documentation so every role has enough context to start wo
 
 - [ ] `docs/sources/README.md` lists every uploaded source
 - [ ] `docs/vision.md` and `docs/scope.md` filled, not templated
-- [ ] At least one `docs/<domain>/architecture.md` section fleshed out with `based-on:` referencing real sources
+- [ ] For each app planned for MVP: `bun x demiurge add app <name> --role=<role>` run, and `docs/apps/<name>/architecture.md` has a real first draft with `based-on:` linking to real sources
 - [ ] First implementation issues opened with `role:*` / `area:*` labels, Issue Type set, and Project Status = Ready
 
 ## Related documentation
@@ -255,6 +256,8 @@ Bootstrap the project documentation so every role has enough context to start wo
 - `docs/sources/README.md`
 - `docs/vision.md`
 - `docs/scope.md`
+- `apps/README.md` (will be empty until apps are added)
+- `.demiurge/apps.yml`
 
 ---
 _Auto-created by setup.sh — this is the entry point for all work on the project._

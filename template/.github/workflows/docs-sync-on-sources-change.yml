@@ -98,7 +98,7 @@ jobs:
             const stale   = `${{ steps.stale.outputs.docs }}`.split('\n').filter(Boolean);
 
             // Derive area:<domain> labels from the paths of stale synthesized docs.
-            // docs/web/architecture.md -> area:web
+            // docs/apps/<name>/architecture.md -> area:web or area:contracts depending on app role
             // docs/contracts/... -> area:contracts
             // docs/design/... -> area:design
             // Top-level docs (docs/vision.md etc.) -> area:product

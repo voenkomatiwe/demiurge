@@ -42,7 +42,7 @@ Triggered by CI after:
 3. Multisig members co-sign the deploy transaction via _(fill — e.g. Safe UI)_.
 4. After deploy:
    - [ ] Verify source on Etherscan
-   - [ ] Update `docs/contracts/interfaces.md` with deployed addresses
+   - [ ] Update `docs/apps/<your-app>/interfaces.md` with deployed addresses
    - [ ] Tag the commit `contracts-v<major>.<minor>.<patch>`
    - [ ] Announce in `#deployments` channel
 
@@ -52,7 +52,7 @@ Every deploy must result in verified source on the chain's explorer. Unverified 
 
 ## Upgrades
 
-If contracts are upgradeable (see `docs/contracts/architecture.md#upgrade-strategy`):
+If contracts are upgradeable (see `docs/apps/<your-app>/architecture.md#upgrade-strategy`):
 
 1. Write upgrade script + storage-layout diff (`forge inspect ... storage-layout`)
 2. Run upgrade sim on forked network, assert invariants still hold
@@ -65,7 +65,7 @@ Contracts are immutable. Rollback = deploy new contracts + migrate state. Docume
 
 ## Post-deploy checklist
 
-- [ ] Addresses added to `docs/contracts/interfaces.md`
+- [ ] Addresses added to `docs/apps/<your-app>/interfaces.md`
 - [ ] ABI files committed to repo
 - [ ] Backend configuration updated with new addresses
 - [ ] Frontend chain config updated

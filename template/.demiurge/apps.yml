@@ -1,0 +1,3 @@
+# Registry of apps in this project. Managed by `demiurge add app`.
+# Source of truth — regenerate apps/README.md if edited by hand.
+apps: []

@@ -26,8 +26,8 @@ All documentation lives in [`docs/`](./docs/). Start with:
 - [`docs/vision.md`](./docs/vision.md) — what we're building and why
 - [`docs/scope.md`](./docs/scope.md) — in/out of MVP
 - [`docs/sources/README.md`](./docs/sources/README.md) — original briefs, specs, wireframes
-- [`docs/web/architecture.md`](./docs/web/architecture.md) — web app architecture (if applicable)
-- [`docs/contracts/architecture.md`](./docs/contracts/architecture.md) — smart contracts (if applicable)
+- [`apps/README.md`](./apps/README.md) — all apps in this project and their roles
+- [`docs/apps/<name>/architecture.md`](./apps/README.md) — per-app architecture (web or contracts)
 - [`docs/design/system.md`](./docs/design/system.md) — design system (if applicable)
 
 ## Role onboarding
