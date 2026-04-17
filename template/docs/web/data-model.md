@@ -4,9 +4,11 @@ based-on: []
 owns-labels: ["area:web", "area:data-model"]
 spawns-issues-on-change:
   - section: "## Entities"
-    labels: ["role:backend", "area:data-model", "area:web", "type:feature"]
+    type: Feature
+    labels: ["role:backend", "area:data-model", "area:web"]
   - section: "## Migrations"
-    labels: ["role:backend", "area:data-model", "area:web", "type:refactor"]
+    type: Task
+    labels: ["role:backend", "area:data-model", "area:web"]
 ---
 
 # Web Data Model

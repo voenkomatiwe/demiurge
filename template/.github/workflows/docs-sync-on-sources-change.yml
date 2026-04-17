@@ -130,5 +130,6 @@ jobs:
               ...context.repo,
               title: `[Docs sync] Re-synthesize after sources update (${changed.length} file${changed.length === 1 ? '' : 's'})`,
               body,
-              labels: ['type:docs-sync', 'role:pm', 'status:ready', ...areaLabels]
+              type: 'Task',
+              labels: ['role:pm', ...areaLabels]
             });

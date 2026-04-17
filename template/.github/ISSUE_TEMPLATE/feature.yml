@@ -1,7 +1,7 @@
 name: Feature
 description: New functionality
 title: "[Feature] "
-labels: ["type:feature", "status:needs-design"]
+type: Feature
 body:
   - type: markdown
     attributes:

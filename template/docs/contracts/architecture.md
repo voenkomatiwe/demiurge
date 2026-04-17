@@ -4,11 +4,14 @@ based-on: []
 owns-labels: ["area:contracts", "area:architecture"]
 spawns-issues-on-change:
   - section: "## Contracts"
-    labels: ["role:smartcontract", "area:contracts", "type:feature"]
+    type: Feature
+    labels: ["role:smartcontract", "area:contracts"]
   - section: "## Upgrade strategy"
-    labels: ["role:smartcontract", "area:contracts", "area:security", "type:refactor"]
+    type: Task
+    labels: ["role:smartcontract", "area:contracts", "area:security"]
   - section: "## Access control"
-    labels: ["role:smartcontract", "area:contracts", "area:security", "type:feature"]
+    type: Feature
+    labels: ["role:smartcontract", "area:contracts", "area:security"]
 ---
 
 # Smart Contracts Architecture

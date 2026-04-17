@@ -4,9 +4,11 @@ based-on: []
 owns-labels: ["area:contracts", "area:api"]
 spawns-issues-on-change:
   - section: "## Public functions"
-    labels: ["role:smartcontract", "role:backend", "area:contracts", "area:api", "type:feature"]
+    type: Feature
+    labels: ["role:smartcontract", "role:backend", "area:contracts", "area:api"]
   - section: "## Events"
-    labels: ["role:smartcontract", "role:backend", "area:contracts", "area:api", "type:feature"]
+    type: Feature
+    labels: ["role:smartcontract", "role:backend", "area:contracts", "area:api"]
 ---
 
 # Contract Interfaces

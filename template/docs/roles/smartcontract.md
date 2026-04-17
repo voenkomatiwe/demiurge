@@ -33,21 +33,24 @@ Off-limits: `frontend/`, `backend/`, `docs/sources/` (read-only).
 
 ## Workflow
 
+Lifecycle lives on the Project board — there are no `status:*` labels. Use MCP tools (`list_project_items`, `update_issue`, `update_project_item_field`) or the CLI equivalents below.
+
 ```bash
-# Find your queue
-gh issue list --label "role:smartcontract" --label "status:ready"
+# 1. Find your queue — items with role:smartcontract AND Project Status = Ready
+gh project item-list "$PROJECT_NUMBER" --owner "$ORG" --format json \
+  | jq '.items[] | select(.status=="Ready" and (.labels|index("role:smartcontract")))'
 
-# Claim
-gh issue edit <n> --add-assignee @me \
-  --add-label "status:in-progress" --remove-label "status:ready"
+# 2. Claim — assign to self, flip Project Status to "In progress"
+gh issue edit <n> --add-assignee @me
+# set Project Status via MCP update_project_item_field or GraphQL updateProjectV2ItemFieldValue
 
-# Work
+# 3. Work
 git checkout -b contracts/<issue-n>-<short-slug>
 # ... edits in contracts/ only ...
 
-# Submit
+# 4. Submit
 gh pr create --fill
-gh issue edit <n> --add-label "status:review" --remove-label "status:in-progress"
+# set Project Status to "Review"
 ```
 
 ## Quality gates before requesting review
@@ -65,13 +68,13 @@ gh issue edit <n> --add-label "status:review" --remove-label "status:in-progress
 
 ## Common tasks
 
-| Task | Labels |
-|------|--------|
-| New contract or module | `role:smartcontract area:contracts type:feature` |
-| ABI-breaking change | `role:smartcontract role:backend area:contracts area:api` |
-| Security fix | `role:smartcontract area:security type:bug` |
-| Gas optimization | `role:smartcontract area:contracts type:refactor` |
-| Upgrade | `role:smartcontract area:contracts area:security type:refactor` |
+| Task | Issue Type | Labels |
+|------|-----------|--------|
+| New contract or module | `Feature` | `role:smartcontract area:contracts` |
+| ABI-breaking change | `Feature` | `role:smartcontract role:backend area:contracts area:api` |
+| Security fix | `Bug` | `role:smartcontract area:security` |
+| Gas optimization | `Task` | `role:smartcontract area:contracts` |
+| Upgrade | `Task` | `role:smartcontract area:contracts area:security` |
 
 ## Deploy authority
 

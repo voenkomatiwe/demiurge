@@ -4,9 +4,11 @@ based-on: []
 owns-labels: ["area:contracts", "area:security"]
 spawns-issues-on-change:
   - section: "## Audit checklist"
-    labels: ["role:smartcontract", "area:contracts", "area:security", "type:docs"]
+    type: Task
+    labels: ["role:smartcontract", "area:contracts", "area:security"]
   - section: "## Known risks"
-    labels: ["role:smartcontract", "area:contracts", "area:security", "type:docs"]
+    type: Task
+    labels: ["role:smartcontract", "area:contracts", "area:security"]
 ---
 
 # Smart Contracts Security

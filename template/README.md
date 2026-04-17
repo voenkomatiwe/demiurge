@@ -45,13 +45,15 @@ Pick your role and follow its card:
 
 ## Working on tasks
 
-All work is tracked in **GitHub Issues**. Find your queue:
+All work is tracked in **GitHub Issues** on a **GitHub Project**. The Project's Status field is the single source of truth for lifecycle (`Ready` → `In progress` → `Review` → `Done`, plus `Blocked`). Find your queue:
 
 ```bash
-gh issue list --label "role:<your-role>" --label "status:ready"
+# Items for your role, ready to claim
+gh project item-list "$PROJECT_NUMBER" --owner "$ORG" --format json \
+  | jq '.items[] | select(.status=="Ready" and (.labels|index("role:<your-role>")))'
 ```
 
-See your role card for the full workflow (claim, submit, review).
+AI agents typically work through the GitHub MCP server (`list_project_items`, `update_issue`, `update_project_item_field`); the command above is the CLI equivalent. See your role card for the full workflow (claim, submit, review).
 
 ## AI agents
 

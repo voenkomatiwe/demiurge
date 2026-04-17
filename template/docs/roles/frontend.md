@@ -27,21 +27,24 @@ Off-limits: `backend/`, `contracts/`, `docs/sources/` (read-only).
 
 ## Workflow
 
+Lifecycle lives on the Project board — there are no `status:*` labels. Use MCP tools (`list_project_items`, `update_issue`, `update_project_item_field`) or the CLI equivalents below.
+
 ```bash
-# Find your queue
-gh issue list --label "role:frontend" --label "status:ready"
+# 1. Find your queue — items with role:frontend AND Project Status = Ready
+gh project item-list "$PROJECT_NUMBER" --owner "$ORG" --format json \
+  | jq '.items[] | select(.status=="Ready" and (.labels|index("role:frontend")))'
 
-# Claim
-gh issue edit <n> --add-assignee @me \
-  --add-label "status:in-progress" --remove-label "status:ready"
+# 2. Claim — assign to self, flip Project Status to "In progress"
+gh issue edit <n> --add-assignee @me
+# set Project Status via MCP update_project_item_field or GraphQL updateProjectV2ItemFieldValue
 
-# Work
+# 3. Work
 git checkout -b frontend/<issue-n>-<short-slug>
 # ... edits in frontend/ only ...
 
-# Submit
+# 4. Submit
 gh pr create --fill
-gh issue edit <n> --add-label "status:review" --remove-label "status:in-progress"
+# set Project Status to "Review"
 ```
 
 ## Quality gates before requesting review
@@ -56,9 +59,9 @@ gh issue edit <n> --add-label "status:review" --remove-label "status:in-progress
 
 ## Common tasks
 
-| Task | Labels |
-|------|--------|
-| New screen | `role:frontend area:ui type:feature` |
-| Wiring a new API endpoint | `role:frontend area:api type:feature` |
-| UI refactor | `role:frontend area:ui type:refactor` |
-| Visual bug | `role:frontend area:ui type:bug` |
+| Task | Issue Type | Labels |
+|------|-----------|--------|
+| New screen | `Feature` | `role:frontend area:ui` |
+| Wiring a new API endpoint | `Feature` | `role:frontend area:api` |
+| UI refactor | `Task` | `role:frontend area:ui` |
+| Visual bug | `Bug` | `role:frontend area:ui` |

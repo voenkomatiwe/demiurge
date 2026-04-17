@@ -32,19 +32,22 @@ Off-limits: implementation code (`frontend/`, `backend/`, `contracts/`), `docs/s
 
 ## Workflow
 
+Lifecycle lives on the Project board — there are no `status:*` labels. Use MCP tools (`list_project_items`, `update_issue`, `update_project_item_field`) or the CLI equivalents below.
+
 ```bash
-# Find your queue
-gh issue list --label "role:designer" --label "status:ready"
+# 1. Find your queue — items with role:designer AND Project Status = Ready
+gh project item-list "$PROJECT_NUMBER" --owner "$ORG" --format json \
+  | jq '.items[] | select(.status=="Ready" and (.labels|index("role:designer")))'
 
-# Claim
-gh issue edit <n> --add-assignee @me \
-  --add-label "status:in-progress" --remove-label "status:ready"
+# 2. Claim — assign to self, flip Project Status to "In progress"
+gh issue edit <n> --add-assignee @me
+# set Project Status via MCP update_project_item_field or GraphQL updateProjectV2ItemFieldValue
 
-# Work in Figma. When shipping a new or changed pattern, update docs/design/system.md in the same PR.
+# 3. Work in Figma. When shipping a new or changed pattern, update docs/design/system.md in the same PR.
 
-# Submit
+# 4. Submit
 gh pr create --fill
-gh issue edit <n> --add-label "status:review" --remove-label "status:in-progress"
+# set Project Status to "Review"
 ```
 
 ## Quality gates before requesting review
@@ -58,8 +61,8 @@ gh issue edit <n> --add-label "status:review" --remove-label "status:in-progress
 
 ## Common tasks
 
-| Task | Labels |
-|------|--------|
-| New pattern | `role:designer area:design area:ui type:feature` |
-| Token change | `role:designer area:design type:refactor` |
-| Accessibility review | `role:designer area:design area:security type:docs` |
+| Task | Issue Type | Labels |
+|------|-----------|--------|
+| New pattern | `Feature` | `role:designer area:design area:ui` |
+| Token change | `Task` | `role:designer area:design` |
+| Accessibility review | `Task` | `role:designer area:design area:security` |

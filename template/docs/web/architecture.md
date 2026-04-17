@@ -4,11 +4,14 @@ based-on: []
 owns-labels: ["area:web", "area:architecture"]
 spawns-issues-on-change:
   - section: "## Authentication"
-    labels: ["role:backend", "area:auth", "area:web", "type:feature"]
+    type: Feature
+    labels: ["role:backend", "area:auth", "area:web"]
   - section: "## Data flow"
-    labels: ["role:backend", "role:frontend", "area:api", "area:web", "type:feature"]
+    type: Feature
+    labels: ["role:backend", "role:frontend", "area:api", "area:web"]
   - section: "## External integrations"
-    labels: ["role:backend", "area:web", "type:feature"]
+    type: Feature
+    labels: ["role:backend", "area:web"]
 ---
 
 # Web Architecture

@@ -32,25 +32,28 @@ When these files are edited, you are the person to review the PR — even if you
 
 - **Frontend**: the HTTP contract lives in `docs/web/api.md`. When you change it — add, remove, rename, or change a shape — bump the OpenAPI spec in the same PR.
 - **Smart contracts**: on-chain interactions go through `docs/contracts/interfaces.md`. Addresses, ABIs, and events live there. Never hardcode addresses.
-- **PM**: new capabilities start as issues in `status:needs-design`. Don't implement without one.
+- **PM**: new capabilities start as issues in Project Status `Blocked` (grooming). Don't implement without one.
 
 ## Workflow
 
+Lifecycle lives on the Project board — there are no `status:*` labels. Use MCP tools (`list_project_items`, `update_issue`, `update_project_item_field`) or the CLI equivalents below.
+
 ```bash
-# Find your queue
-gh issue list --label "role:backend" --label "status:ready"
+# 1. Find your queue — items with role:backend AND Project Status = Ready
+gh project item-list "$PROJECT_NUMBER" --owner "$ORG" --format json \
+  | jq '.items[] | select(.status=="Ready" and (.labels|index("role:backend")))'
 
-# Claim
-gh issue edit <n> --add-assignee @me \
-  --add-label "status:in-progress" --remove-label "status:ready"
+# 2. Claim — assign to self, flip Project Status to "In progress"
+gh issue edit <n> --add-assignee @me
+# set Project Status via MCP update_project_item_field or GraphQL updateProjectV2ItemFieldValue
 
-# Work
+# 3. Work
 git checkout -b backend/<issue-n>-<short-slug>
 # ... edits in backend/ only ...
 
-# Submit
+# 4. Submit
 gh pr create --fill
-gh issue edit <n> --add-label "status:review" --remove-label "status:in-progress"
+# set Project Status to "Review"
 ```
 
 ## Quality gates before requesting review
@@ -66,10 +69,10 @@ gh issue edit <n> --add-label "status:review" --remove-label "status:in-progress
 
 ## Common tasks
 
-| Task | Labels |
-|------|--------|
-| New endpoint | `role:backend area:api type:feature` |
-| Schema migration | `role:backend area:data-model type:feature` |
-| Auth / security | `role:backend area:auth area:security` |
-| Performance fix | `role:backend type:refactor` |
-| Bug fix | `role:backend type:bug` |
+| Task | Issue Type | Labels |
+|------|-----------|--------|
+| New endpoint | `Feature` | `role:backend area:api` |
+| Schema migration | `Feature` | `role:backend area:data-model` |
+| Auth / security | `Feature` | `role:backend area:auth area:security` |
+| Performance fix | `Task` | `role:backend` |
+| Bug fix | `Bug` | `role:backend` |

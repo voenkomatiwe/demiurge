@@ -1,7 +1,8 @@
 name: Docs sync (internal)
 description: Re-synthesize docs after upstream sources changed. Usually auto-created by CI.
 title: "[Docs sync] "
-labels: ["type:docs-sync", "role:pm", "status:ready"]
+type: Task
+labels: ["role:pm"]
 body:
   - type: markdown
     attributes:

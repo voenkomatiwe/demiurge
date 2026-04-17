@@ -21,5 +21,5 @@ See the rationale in [`docs/web/decisions/README.md`](../../web/decisions/README
 
 1. Copy `0001-example.md` to `NNNN-<slug>.md`.
 2. Fill in frontmatter and sections.
-3. Open a PR with label `type:docs` and get review from another smart-contract team member.
+3. Open a PR (docs-only change) and get review from another smart-contract team member.
 4. On merge, add a row to the index above.

@@ -4,8 +4,11 @@
 # Color convention (approximate):
 #   area:*      green/blue  — which domain or subtopic
 #   role:*      yellow      — who owns it
-#   type:*      grey/purple — kind of work
-#   status:*    red→green   — progression
+#
+# "What kind of work" is NOT a label — use the native GitHub Issue Type
+# (Bug / Feature / Task / custom). "What state is work in" is also NOT a
+# label — use the Project Status field (Ready / In progress / Review /
+# Blocked / Done). Labels stay as stable metadata: domain + responsible role.
 #
 # Feel free to tune colors to your org's palette; just keep the prefix scheme.
 
@@ -72,36 +75,3 @@
   color: "FEF2C0"
   description: "Reviewer is involved"
 
-# --- Types ---
-- name: "type:feature"
-  color: "84B6EB"
-  description: "New functionality"
-- name: "type:bug"
-  color: "EE0701"
-  description: "Something is broken"
-- name: "type:refactor"
-  color: "CCCCCC"
-  description: "Internal change, no behaviour change"
-- name: "type:docs"
-  color: "0075CA"
-  description: "Documentation only"
-- name: "type:docs-sync"
-  color: "0075CA"
-  description: "Re-sync docs from upstream sources"
-
-# --- Status (lifecycle) ---
-- name: "status:needs-design"
-  color: "FBCA04"
-  description: "Not yet ready to implement — PM is grooming"
-- name: "status:ready"
-  color: "0E8A16"
-  description: "Ready to be claimed"
-- name: "status:in-progress"
-  color: "1D76DB"
-  description: "Actively being worked on"
-- name: "status:review"
-  color: "5319E7"
-  description: "Awaiting review"
-- name: "status:blocked"
-  color: "B60205"
-  description: "Can't progress until something else moves"

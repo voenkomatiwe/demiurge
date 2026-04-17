@@ -248,7 +248,7 @@ Bootstrap the project documentation so every role has enough context to start wo
 - [ ] `docs/sources/README.md` lists every uploaded source
 - [ ] `docs/vision.md` and `docs/scope.md` filled, not templated
 - [ ] At least one `docs/<domain>/architecture.md` section fleshed out with `based-on:` referencing real sources
-- [ ] First implementation issues opened with `role:*` / `area:*` / `status:ready` labels
+- [ ] First implementation issues opened with `role:*` / `area:*` labels, Issue Type set, and Project Status = Ready
 
 ## Related documentation
 
@@ -268,9 +268,8 @@ if command -v gh >/dev/null 2>&1 \
   info "Creating entry-point PM issue..."
   if gh issue create \
        --title "[PM] Synthesize initial project documentation" \
+       --type "Task" \
        --label "role:pm" \
-       --label "type:docs" \
-       --label "status:ready" \
        --body "$FIRST_ISSUE_BODY" >/dev/null 2>&1; then
     ok "Entry-point issue created."
     FIRST_ISSUE_CREATED=1
@@ -296,7 +295,7 @@ STEP=$((STEP+1))
 if [ "$FIRST_ISSUE_CREATED" = 0 ]; then
   echo "  $STEP. Open the entry-point PM issue:"
   echo "       gh issue create --title '[PM] Synthesize initial project documentation' \\"
-  echo "         --label 'role:pm' --label 'type:docs' --label 'status:ready'"
+  echo "         --type 'Task' --label 'role:pm'"
 fi
 echo
 echo "Start onboarding via README.md → docs/roles/<your-role>.md"

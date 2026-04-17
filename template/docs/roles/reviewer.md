@@ -5,7 +5,7 @@ kind: role-card
 
 # Reviewer Role
 
-Your zone: **pull requests and issues in `status:review`**.
+Your zone: **pull requests and issues with Project Status `Review`**.
 You don't ship code yourself. You decide whether work is done.
 
 ## Read before reviewing
@@ -50,11 +50,12 @@ Tick all before approving:
 ## Workflow
 
 ```bash
-# Your queue
-gh issue list --label "status:review"
+# Your queue — items with Project Status = Review
+gh project item-list "$PROJECT_NUMBER" --owner "$ORG" --format json \
+  | jq '.items[] | select(.status=="Review")'
 gh pr list --search "is:open review-requested:@me"
 
-# After review
-gh issue edit <n> --remove-label "status:review" --add-label "status:ready"  # sending back
-# or let the merge + close close the issue naturally
+# After review: sending back → set Project Status to "In progress"
+#   (via MCP update_project_item_field or GraphQL updateProjectV2ItemFieldValue)
+# Or let the merge + close close the issue naturally — Status moves to Done automatically.
 ```

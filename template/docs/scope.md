@@ -4,7 +4,8 @@ based-on: []
 owns-labels: ["area:product", "area:scope"]
 spawns-issues-on-change:
   - section: "## In scope (MVP)"
-    labels: ["role:pm", "type:feature", "status:needs-design"]
+    type: Feature
+    labels: ["role:pm"]
 ---
 
 # Scope

@@ -4,9 +4,11 @@ based-on: []
 owns-labels: ["area:web", "area:api"]
 spawns-issues-on-change:
   - section: "## Endpoints"
-    labels: ["role:backend", "role:frontend", "area:api", "type:feature"]
+    type: Feature
+    labels: ["role:backend", "role:frontend", "area:api"]
   - section: "## Error conventions"
-    labels: ["role:backend", "role:frontend", "area:api", "type:refactor"]
+    type: Task
+    labels: ["role:backend", "role:frontend", "area:api"]
 ---
 
 # Web API Contracts

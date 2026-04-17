@@ -4,25 +4,35 @@ based-on: []
 owns-labels: ["area:design", "area:ui"]
 spawns-issues-on-change:
   - section: "### Colors (semantic)"
-    labels: ["role:designer", "role:frontend", "area:design", "area:ui", "type:refactor"]
+    type: Task
+    labels: ["role:designer", "role:frontend", "area:design", "area:ui"]
   - section: "### Fonts"
-    labels: ["role:designer", "role:frontend", "area:design", "area:ui", "type:refactor"]
+    type: Task
+    labels: ["role:designer", "role:frontend", "area:design", "area:ui"]
   - section: "### Typography"
-    labels: ["role:designer", "role:frontend", "area:design", "area:ui", "type:refactor"]
+    type: Task
+    labels: ["role:designer", "role:frontend", "area:design", "area:ui"]
   - section: "### Spacing (4-point scale)"
-    labels: ["role:designer", "role:frontend", "area:design", "area:ui", "type:refactor"]
+    type: Task
+    labels: ["role:designer", "role:frontend", "area:design", "area:ui"]
   - section: "### Radius"
-    labels: ["role:designer", "role:frontend", "area:design", "area:ui", "type:refactor"]
+    type: Task
+    labels: ["role:designer", "role:frontend", "area:design", "area:ui"]
   - section: "### Shadows"
-    labels: ["role:designer", "role:frontend", "area:design", "area:ui", "type:refactor"]
+    type: Task
+    labels: ["role:designer", "role:frontend", "area:design", "area:ui"]
   - section: "### Z-Index"
-    labels: ["role:designer", "role:frontend", "area:design", "area:ui", "type:refactor"]
+    type: Task
+    labels: ["role:designer", "role:frontend", "area:design", "area:ui"]
   - section: "### Motion"
-    labels: ["role:designer", "role:frontend", "area:design", "area:ui", "type:refactor"]
+    type: Task
+    labels: ["role:designer", "role:frontend", "area:design", "area:ui"]
   - section: "### Breakpoints (mobile-first)"
-    labels: ["role:designer", "role:frontend", "area:design", "area:ui", "type:refactor"]
+    type: Task
+    labels: ["role:designer", "role:frontend", "area:design", "area:ui"]
   - section: "## Dark Mode (opt-in)"
-    labels: ["role:designer", "role:frontend", "area:design", "area:ui", "type:feature"]
+    type: Feature
+    labels: ["role:designer", "role:frontend", "area:design", "area:ui"]
 ---
 
 # Design System — Master

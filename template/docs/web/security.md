@@ -4,9 +4,11 @@ based-on: []
 owns-labels: ["area:web", "area:security"]
 spawns-issues-on-change:
   - section: "## Authentication"
-    labels: ["role:backend", "area:auth", "area:security", "type:feature"]
+    type: Feature
+    labels: ["role:backend", "area:auth", "area:security"]
   - section: "## Threat model"
-    labels: ["role:backend", "area:security", "type:refactor"]
+    type: Task
+    labels: ["role:backend", "area:security"]
 ---
 
 # Web Security

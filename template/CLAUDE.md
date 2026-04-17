@@ -29,23 +29,26 @@ Don't read the whole docs tree. Use this table — pick one row, read one file, 
 | Designer code-style reference (spec structure, handoff) | `docs/design/references/designer-code-style.md` |
 | Learn the project glossary | `docs/glossary.md` |
 | Onboard to a role | `docs/roles/<role>.md` |
-| Find my tasks | `gh issue list --label "role:<role>" --label "status:ready"` |
+| Find my tasks | Project board, filter: `role:<role>` AND Status = Ready |
 | Find all tasks on a topic | `gh issue list --label "area:<topic>" --state all` |
-| See what's in review | `gh issue list --label "status:review"` |
-| See what's blocked | `gh issue list --label "status:blocked"` |
+| See what's in review | Project board, filter: Status = Review |
+| See what's blocked | Project board, filter: Status = Blocked |
 | Look at past session context | `.claude/memory.md` |
 
 ---
 
 ## Workflow in one screen
 
-```bash
-# 1. Pick a task
-gh issue list --label "role:<role>" --label "status:ready"
+Lifecycle lives on the **GitHub Project Status field**, not on labels. Preferred path: MCP tools (`list_project_items`, `update_issue`, `update_project_item_field`). CLI fallbacks shown below.
 
-# 2. Claim it
-gh issue edit <n> --add-assignee @me \
-  --add-label "status:in-progress" --remove-label "status:ready"
+```bash
+# 1. Pick a task — role:<role> AND Project Status = Ready
+gh project item-list "$PROJECT_NUMBER" --owner "$ORG" --format json \
+  | jq '.items[] | select(.status=="Ready" and (.labels|index("role:<role>")))'
+
+# 2. Claim — assign to self, flip Project Status to "In progress"
+gh issue edit <n> --add-assignee @me
+# → MCP update_project_item_field to set Status = "In progress"
 
 # 3. Read the referenced docs (every issue must link docs under "Related documentation")
 #    Read only the linked docs, not the whole tree.
@@ -53,8 +56,8 @@ gh issue edit <n> --add-assignee @me \
 # 4. Work. Touch code only in your role's workspace (see your role card).
 
 # 5. Submit
-gh issue edit <n> --add-label "status:review" --remove-label "status:in-progress"
 gh pr create --fill
+# → MCP update_project_item_field to set Status = "Review"
 ```
 
 ---
@@ -78,4 +81,4 @@ gh pr create --fill
 3. **Record decisions** as ADRs in `docs/<domain>/decisions/NNNN-<slug>.md`. Include frontmatter (`id`, `status`, `date`, `tags`, `related-issues`).
 4. **When you modify a synthesized doc**, check its frontmatter for `spawns-issues-on-change` — a GitHub Action will pick up the diff and create follow-up issues if the listed sections changed.
 5. **Stay in scope**: your issue has labels like `role:<x>` and `area:<y>`. Don't expand beyond the files those labels imply without opening a new issue.
-6. **When blocked**, add `status:blocked` label and comment on the issue with what's needed.
+6. **When blocked**, set the Project Status to `Blocked` and comment on the issue with what's needed.

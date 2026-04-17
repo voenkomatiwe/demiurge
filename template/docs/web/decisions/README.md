@@ -37,5 +37,5 @@ but for small projects a manual update on ADR addition is fine.
 
 1. Copy `0001-example.md` to `NNNN-<slug>.md` (next sequential number).
 2. Fill in frontmatter and sections. Keep it short — aim for under 200 words of prose.
-3. Open a PR with label `type:docs` and get one approval.
+3. Open a PR (no code changes — docs only) and get one approval.
 4. On merge, add a row to the index table above.

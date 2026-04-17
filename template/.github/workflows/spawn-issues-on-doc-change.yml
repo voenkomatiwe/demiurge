@@ -62,6 +62,7 @@ jobs:
               for (const rule of rules) {
                 const section = rule.section;          // e.g. "## Authentication"
                 const labels  = rule.labels || [];
+                const type    = rule.type || 'Task';   // native GitHub Issue Type
                 if (!section) continue;
 
                 // 3. Heuristic: did the diff touch lines within or near this section heading?
@@ -94,7 +95,8 @@ jobs:
                   ...context.repo,
                   title: `[Auto] ${file.replace('docs/', '').replace('.md', '')} — ${section.replace(/^#+\s*/, '')}`,
                   body,
-                  labels: Array.from(new Set([...labels, 'status:needs-design']))
+                  type,
+                  labels: Array.from(new Set(labels))
                 });
 
                 core.info(`Opened issue for ${file} / ${section}`);

@@ -28,30 +28,39 @@ You orchestrate. You don't implement.
 
 ### 0. Bootstrap (first run only)
 
-The repo ships with a workflow `.github/workflows/add-to-project.yml` that auto-attaches every new issue to a GitHub Project. It needs two things: the Project URL (repo variable) and a PAT (repo secret). Once set, you never touch the Project wiring again — issues from the UI, agents, or other workflows all land on the board automatically.
+The repo ships with a workflow `.github/workflows/add-to-project.yml` that auto-attaches every new issue to a GitHub Project. The Project's **Status field** is the single source of truth for lifecycle — not labels. Bootstrap wires everything up once; after that, issues from the UI, MCP agents, or other workflows all land on the board automatically.
 
 ```bash
 ORG=$(gh repo view --json owner -q .owner.login)
 REPO=$(gh repo view --json name  -q .name)
 
-# 1. Create the Project (title = repo name) and capture its URL.
-#    For org accounts, the URL looks like https://github.com/orgs/<ORG>/projects/<N>.
-#    For personal accounts, https://github.com/users/<USER>/projects/<N>.
-PROJECT_URL=$(gh project create --owner "$ORG" --title "$REPO" --format json -q .url)
+# 0. Verify native Issue Types exist. GitHub ships Bug / Feature / Task by
+#    default — this template uses those three. Org accounts: check at
+#    https://github.com/organizations/$ORG/settings/issue-types
+#    Personal accounts: available out of the box.
 
-# 2. Link the repo to the Project so items show up under the repo's "Projects" tab.
+# 1. Create the Project (title = repo name) and capture its URL.
+PROJECT_URL=$(gh project create --owner "$ORG" --title "$REPO" --format json -q .url)
 PROJECT_NUMBER=$(basename "$PROJECT_URL")
+
+# 2. Link the repo to the Project so items show up in the repo's "Projects" tab.
 gh project link "$PROJECT_NUMBER" --owner "$ORG" --repo "$ORG/$REPO"
 
-# 3. Persist URL so the add-to-project workflow can read it.
+# 3. Configure the Status field options. Defaults are "Todo / In Progress / Done";
+#    this template uses: Ready, In progress, Review, Blocked, Done.
+#    Easiest: open the Project in the browser → Status field → edit options.
+#    Automated: use the GraphQL mutation `updateProjectV2SingleSelectField`.
+
+# 4. Persist URL so workflows and agents can find the Project.
 gh variable set PROJECT_URL --body "$PROJECT_URL"
 
-# 4. Create a fine-grained PAT with "Projects: Read and write" scope at
-#    https://github.com/settings/personal-access-tokens/new, then store it:
-gh secret set PROJECT_TOKEN   # paste token when prompted
+# 5. Create a fine-grained PAT with "Projects: Read and write" scope at
+#    https://github.com/settings/personal-access-tokens/new, then store it.
+#    The add-to-project workflow uses this to write to the Project.
+gh secret set PROJECT_TOKEN
 ```
 
-After this, every `gh issue create` you run (or any workflow / agent runs) automatically lands on the board. You never call `gh project item-add` manually.
+After this, every `gh issue create` (or MCP `create_issue`) lands on the board. Status defaults to the Project's first option (set it to "Ready" in the Project settings so new issues are immediately claimable).
 
 ### 1. Ingest sources
 When new material lands in `docs/sources/`, update the manifest row (date, kind, synthesized-into, spawned-issues). Nothing else moves until this is done.
@@ -61,35 +70,63 @@ Translate sources into the team's own documentation. Update `vision.md` / `scope
 
 ### 3. Decompose
 Break scope items into issues. Each issue must have:
+- one native **Issue Type** (`Bug` / `Feature` / `Task` — via `--type` on create)
 - one `role:*` label (primary responsible role)
 - one or more `area:*` labels (domain + subtopic)
-- one `type:*` label
-- `status:needs-design` → `status:ready` → `status:in-progress` → `status:review` → closed
 - a `Related documentation` field linking to the exact doc sections that justify it
 - clear acceptance criteria
 
+Lifecycle lives on the Project, not on labels. Flow: **Blocked** (grooming / waiting) → **Ready** → **In progress** → **Review** → **Done** (auto-set on close).
+
 ### 4. Orchestrate
-Move issues from `status:needs-design` to `status:ready` once they are implementable. Unblock dependencies. Clarify scope when an assignee asks.
+When a newly-created issue needs more design or is waiting on something, set its Project Status to **Blocked**. When it's implementable, move it to **Ready** so assignees can claim. Clarify scope on demand.
+
+**Project-board grooming (UI only).** A few fields live on the Project and are not part of the issue body. Fill them during sprint-planning:
+
+| Field | When to fill | Notes |
+|-------|--------------|-------|
+| **Status** | On create / state change | `Ready` / `In progress` / `Review` / `Blocked` / `Done` |
+| **Priority** | During grooming | high / med / low — drives order within Ready |
+| **Size** / **Estimate** | During grooming | rough T-shirt or points — for capacity math |
+| **Iteration** | At sprint start | assign to current sprint |
+| **Start date / Target date** | If externally driven | only when a deadline is real |
+| **Relationships** | As discovered | parent/child/blocks — use for epics and dependency chains |
+
+Issue-level fields (`role:*`, `area:*`, type, milestone, assignees, body, related-docs) are set on create. Project fields — including Status — are set on the Project item (via MCP tool calls, `gh project item-edit`, or the Project UI).
 
 ### 5. Review outcomes
-When an issue reaches `status:review`, either approve (close it after merge) or send back with a comment.
+When an issue's Project Status flips to **Review**, either approve (close the issue after merge → Status auto-moves to Done) or move it back to **In progress** with a comment.
 
 ## Workflow
 
-```bash
-# Your dashboard
-gh issue list --label "status:needs-design"       # your backlog to groom
-gh issue list --label "status:review"             # your queue to decide on
-gh issue list --label "status:blocked"            # where to unstick
+You work through a GitHub MCP server — `create_issue`, `update_issue`, `list_issues`, Project mutations. The CLI snippets below describe the same operations for when you're debugging from a shell.
 
-# Create a new issue — the add-to-project workflow attaches it to the board.
+**Dashboard queries** (MCP: use list-project-items with a Status filter; CLI equivalent):
+
+```bash
+gh project item-list "$PROJECT_NUMBER" --owner "$ORG" --format json \
+  | jq '.items[] | select(.status=="Review")    | {number,title}'   # review queue
+gh project item-list "$PROJECT_NUMBER" --owner "$ORG" --format json \
+  | jq '.items[] | select(.status=="Blocked")   | {number,title}'   # unstick
+gh project item-list "$PROJECT_NUMBER" --owner "$ORG" --format json \
+  | jq '.items[] | select(.status=="Ready")     | {number,title}'   # backlog
+```
+
+**Create an issue** — MCP `create_issue`. CLI equivalent:
+
+```bash
 gh issue create \
   --title "..." \
   --body  "..." \
-  --label "role:frontend,area:ui,type:feature,status:needs-design"
+  --type  "Feature" \
+  --label "role:frontend,area:ui"
+# → add-to-project workflow attaches it to the board within seconds.
+# → new item lands in the first Status option (set to "Ready" in Project settings).
 ```
 
-If an issue you create doesn't appear on the Project board within a few seconds, the `add-to-project` workflow failed. Check: `PROJECT_URL` repo variable is set, `PROJECT_TOKEN` secret has `project:write` scope, workflow run logs at Actions → "Add issue to project".
+**Transition an issue** — set Project Status via MCP `update_project_item_field` or GraphQL `updateProjectV2ItemFieldValue`. Don't add a label — there are no `status:*` labels.
+
+**Troubleshooting.** If an issue doesn't appear on the Project board within a few seconds, the `add-to-project` workflow failed. Check: `PROJECT_URL` repo variable, `PROJECT_TOKEN` secret with `project:write` scope, workflow logs at Actions → "Add issue to project".
 
 ## Quality gates for issues you create
 
