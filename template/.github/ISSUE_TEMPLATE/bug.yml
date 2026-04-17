@@ -1,0 +1,67 @@
+name: Bug
+description: Something is broken
+title: "[Bug] "
+labels: ["type:bug", "status:ready"]
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Domain area
+      options:
+        - web
+        - contracts
+        - design
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      options:
+        - "critical (data loss, security, money)"
+        - "high (broken flow, no workaround)"
+        - "medium (broken flow with workaround)"
+        - "low (annoyance, cosmetic)"
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction steps
+      description: Numbered list, minimum viable repro. Include environment (browser, chain, version) if relevant.
+      value: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behaviour
+      description: Include error messages, stack traces, tx hashes, screenshots — whatever makes it reproducible.
+    validations:
+      required: true
+
+  - type: textarea
+    id: related-docs
+    attributes:
+      label: Related documentation
+      description: If you already know which doc describes the affected area, link it.
+      placeholder: "- docs/..."
+
+  - type: textarea
+    id: first-seen
+    attributes:
+      label: First seen
+      description: Version, commit, or date when this first appeared, if known.

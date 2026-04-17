@@ -1,0 +1,83 @@
+name: Feature
+description: New functionality
+title: "[Feature] "
+labels: ["type:feature", "status:needs-design"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for proposing a feature. This template enforces the minimum context every feature needs.
+        If you can't fill in a section yet, the work isn't ready — move it to a discussion instead.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Domain area
+      description: Which domain owns this?
+      options:
+        - web
+        - contracts
+        - design
+    validations:
+      required: true
+
+  - type: dropdown
+    id: role
+    attributes:
+      label: Primary role
+      description: Who's the primary owner? Add more role labels after the issue is created if needed.
+      options:
+        - frontend
+        - backend
+        - smartcontract
+        - designer
+        - pm
+    validations:
+      required: true
+
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+      description: One sentence, in terms of user outcome. Not how — what.
+      placeholder: "As a <user>, I want <outcome>, so that <benefit>."
+    validations:
+      required: true
+
+  - type: textarea
+    id: related-docs
+    attributes:
+      label: Related documentation
+      description: |
+        Paths (with anchors when possible) into `docs/`. At least one required.
+        Example:
+          - docs/web/architecture.md#authentication
+          - docs/web/decisions/0002-auth-provider.md
+      placeholder: "- docs/..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: Checkbox list. Each item must be objectively verifiable.
+      value: |
+        - [ ]
+        - [ ]
+        - [ ]
+    validations:
+      required: true
+
+  - type: textarea
+    id: out-of-scope
+    attributes:
+      label: Explicitly out of scope
+      description: Things this issue will NOT include, to prevent scope creep.
+
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Depends on
+      description: Issues or PRs that must land first.
+      placeholder: "#42, #43"

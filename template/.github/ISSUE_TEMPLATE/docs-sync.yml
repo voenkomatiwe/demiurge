@@ -1,0 +1,52 @@
+name: Docs sync (internal)
+description: Re-synthesize docs after upstream sources changed. Usually auto-created by CI.
+title: "[Docs sync] "
+labels: ["type:docs-sync", "role:pm", "status:ready"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This template is normally filled in by the `docs-sync-on-sources-change` workflow.
+        If you're filling it manually, you probably want the Feature or Bug template instead.
+
+  - type: textarea
+    id: changed-sources
+    attributes:
+      label: Source files that changed
+      description: Paths under `docs/sources/`.
+      placeholder: "- docs/sources/brief.pdf"
+    validations:
+      required: true
+
+  - type: textarea
+    id: stale-docs
+    attributes:
+      label: Potentially stale synthesized docs
+      description: Docs that list the changed sources in their `based-on:` frontmatter.
+      placeholder: "- docs/vision.md"
+    validations:
+      required: true
+
+  - type: textarea
+    id: source-diff-link
+    attributes:
+      label: Link to diff
+      description: PR or commit URL with the source changes.
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: ack
+    attributes:
+      label: PM acknowledgement
+      options:
+        - label: I've read the changed sources end-to-end.
+        - label: I've listed every doc that needs updating below.
+        - label: I've created follow-up issues (linked below) for implementation fan-out.
+
+  - type: textarea
+    id: followups
+    attributes:
+      label: Follow-up issues created
+      description: Issues this synthesis spawns.
+      placeholder: "#n, #n+1"

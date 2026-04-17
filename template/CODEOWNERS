@@ -1,0 +1,26 @@
+# Code ownership — maps paths to GitHub teams or users.
+# Replace placeholders with real teams in your org after running setup.sh.
+#
+# Syntax: <path-pattern>  @owner1 @owner2 ...
+# Docs: https://docs.github.com/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# --- Documentation domains ---
+docs/sources/          @{{ORG}}/owners
+docs/vision.md         @{{ORG}}/owners @{{ORG}}/pm
+docs/scope.md          @{{ORG}}/owners @{{ORG}}/pm
+docs/glossary.md       @{{ORG}}/pm
+docs/web/              @{{ORG}}/web-team
+docs/contracts/        @{{ORG}}/contracts-team
+docs/design/           @{{ORG}}/design-team
+docs/roles/            @{{ORG}}/leads
+
+# --- Code domains (uncomment once code lives in the repo) ---
+# frontend/              @{{ORG}}/web-team
+# backend/               @{{ORG}}/web-team
+# contracts/             @{{ORG}}/contracts-team
+
+# --- Infrastructure ---
+.github/                @{{ORG}}/leads
+CODEOWNERS              @{{ORG}}/leads
+CLAUDE.md               @{{ORG}}/leads
+README.md               @{{ORG}}/leads

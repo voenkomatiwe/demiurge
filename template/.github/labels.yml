@@ -1,0 +1,107 @@
+# Declarative label definitions.
+# Applied to the repo by .github/workflows/sync-labels.yml on push.
+#
+# Color convention (approximate):
+#   area:*      green/blue  — which domain or subtopic
+#   role:*      yellow      — who owns it
+#   type:*      grey/purple — kind of work
+#   status:*    red→green   — progression
+#
+# Feel free to tune colors to your org's palette; just keep the prefix scheme.
+
+# --- Domain area ---
+- name: "area:web"
+  color: "0E8A16"
+  description: "Web application domain (frontend + backend)"
+- name: "area:contracts"
+  color: "5319E7"
+  description: "Smart contracts domain"
+- name: "area:design"
+  color: "D93F0B"
+  description: "Design system / visual domain"
+- name: "area:product"
+  color: "1D76DB"
+  description: "Product definition (vision, scope, glossary)"
+
+# --- Subtopics (orthogonal to domain) ---
+- name: "area:architecture"
+  color: "C2E0C6"
+  description: "Architectural changes"
+- name: "area:api"
+  color: "BFD4F2"
+  description: "HTTP or ABI contract boundary"
+- name: "area:ui"
+  color: "FBCA04"
+  description: "User interface"
+- name: "area:data-model"
+  color: "A2EEEF"
+  description: "Database / persistence"
+- name: "area:auth"
+  color: "B60205"
+  description: "Authentication / authorization"
+- name: "area:security"
+  color: "B60205"
+  description: "Security-relevant changes"
+- name: "area:deployment"
+  color: "C5DEF5"
+  description: "Deploy pipelines / infra"
+- name: "area:stack"
+  color: "C5DEF5"
+  description: "Framework / library versions"
+- name: "area:scope"
+  color: "BFDADC"
+  description: "MVP scope boundaries"
+
+# --- Roles ---
+- name: "role:frontend"
+  color: "FEF2C0"
+  description: "Frontend owns this"
+- name: "role:backend"
+  color: "FEF2C0"
+  description: "Backend owns this"
+- name: "role:smartcontract"
+  color: "FEF2C0"
+  description: "Smart contracts owns this"
+- name: "role:designer"
+  color: "FEF2C0"
+  description: "Designer owns this"
+- name: "role:pm"
+  color: "FEF2C0"
+  description: "PM owns this"
+- name: "role:reviewer"
+  color: "FEF2C0"
+  description: "Reviewer is involved"
+
+# --- Types ---
+- name: "type:feature"
+  color: "84B6EB"
+  description: "New functionality"
+- name: "type:bug"
+  color: "EE0701"
+  description: "Something is broken"
+- name: "type:refactor"
+  color: "CCCCCC"
+  description: "Internal change, no behaviour change"
+- name: "type:docs"
+  color: "0075CA"
+  description: "Documentation only"
+- name: "type:docs-sync"
+  color: "0075CA"
+  description: "Re-sync docs from upstream sources"
+
+# --- Status (lifecycle) ---
+- name: "status:needs-design"
+  color: "FBCA04"
+  description: "Not yet ready to implement — PM is grooming"
+- name: "status:ready"
+  color: "0E8A16"
+  description: "Ready to be claimed"
+- name: "status:in-progress"
+  color: "1D76DB"
+  description: "Actively being worked on"
+- name: "status:review"
+  color: "5319E7"
+  description: "Awaiting review"
+- name: "status:blocked"
+  color: "B60205"
+  description: "Can't progress until something else moves"

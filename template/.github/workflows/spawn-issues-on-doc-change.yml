@@ -1,0 +1,102 @@
+name: Spawn issues on doc change
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docs/**/*.md"
+      - "!docs/sources/**"
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  spawn:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install gray-matter
+        run: npm install --no-save gray-matter@4
+
+      - name: Spawn issues for changed sections
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { execSync } = require('node:child_process');
+            const fs = require('node:fs');
+            const matter = require('gray-matter');
+
+            // 1. Determine which md files changed (excluding sources).
+            const diff = execSync('git diff --name-only HEAD^ HEAD', { encoding: 'utf8' })
+              .split('\n')
+              .map(s => s.trim())
+              .filter(Boolean)
+              .filter(f => f.startsWith('docs/') && f.endsWith('.md') && !f.startsWith('docs/sources/'));
+
+            if (!diff.length) {
+              core.info('No synthesized doc changes.');
+              return;
+            }
+
+            for (const file of diff) {
+              if (!fs.existsSync(file)) continue;
+
+              const raw = fs.readFileSync(file, 'utf8');
+              const { data: fm } = matter(raw);
+              const rules = Array.isArray(fm['spawns-issues-on-change'])
+                ? fm['spawns-issues-on-change']
+                : [];
+              if (!rules.length) continue;
+
+              // 2. Per-file textual diff (content only, not rename info).
+              const fileDiff = execSync(`git diff HEAD^ HEAD -- "${file}"`, { encoding: 'utf8' });
+
+              for (const rule of rules) {
+                const section = rule.section;          // e.g. "## Authentication"
+                const labels  = rule.labels || [];
+                if (!section) continue;
+
+                // 3. Heuristic: did the diff touch lines within or near this section heading?
+                // A strict parser is possible, but "heading appears in diff OR a line after it"
+                // covers the common case without false negatives.
+                const sectionPattern = section.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                const touched = new RegExp(`^[-+].*${sectionPattern}`, 'm').test(fileDiff)
+                  || new RegExp(`@@[^@]*@@[\\s\\S]*?${sectionPattern}`, 'm').test(fileDiff);
+
+                if (!touched) continue;
+
+                const body = [
+                  `Section **${section}** in \`${file}\` changed.`,
+                  '',
+                  'This follow-up issue was auto-generated from the `spawns-issues-on-change` frontmatter rule.',
+                  '',
+                  '## Acceptance criteria',
+                  '- [ ] Implementation matches the updated doc',
+                  '- [ ] Tests added or updated',
+                  '- [ ] Related docs cross-linked',
+                  '',
+                  `## Related documentation`,
+                  `- \`${file}\` → \`${section}\``,
+                  '',
+                  '---',
+                  `_Auto-generated from commit ${context.sha.slice(0, 7)}._`
+                ].join('\n');
+
+                await github.rest.issues.create({
+                  ...context.repo,
+                  title: `[Auto] ${file.replace('docs/', '').replace('.md', '')} — ${section.replace(/^#+\s*/, '')}`,
+                  body,
+                  labels: Array.from(new Set([...labels, 'status:needs-design']))
+                });
+
+                core.info(`Opened issue for ${file} / ${section}`);
+              }
+            }

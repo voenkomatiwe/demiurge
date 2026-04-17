@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Question or discussion
+    url: https://github.com/{{ORG}}/{{REPO}}/discussions
+    about: Questions, ideas, and general discussion belong in Discussions. Issues are for actionable work.
