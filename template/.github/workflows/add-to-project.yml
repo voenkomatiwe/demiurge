@@ -1,0 +1,29 @@
+name: Add issue to project
+
+# Every issue opened in this repo — from the UI, the API, an agent, or another
+# workflow — is auto-attached to the GitHub Project stored in the PROJECT_URL
+# repo variable. This is the single source of truth for "is this work on the
+# board?" — do NOT add `gh project item-add` calls from other places.
+#
+# Prerequisites (set once during PM bootstrap):
+#   - Repo variable PROJECT_URL   → e.g. https://github.com/orgs/acme/projects/3
+#   - Repo secret   PROJECT_TOKEN → PAT with project:write scope
+#                                   (GITHUB_TOKEN cannot modify Projects v2 on
+#                                    org-owned or user-owned projects)
+
+on:
+  issues:
+    types: [opened, transferred]
+
+permissions:
+  contents: read
+
+jobs:
+  add-to-project:
+    runs-on: ubuntu-latest
+    if: vars.PROJECT_URL != ''
+    steps:
+      - uses: actions/add-to-project@v1
+        with:
+          project-url: ${{ vars.PROJECT_URL }}
+          github-token: ${{ secrets.PROJECT_TOKEN }}

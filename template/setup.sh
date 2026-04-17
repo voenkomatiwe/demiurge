@@ -166,37 +166,6 @@ fi
 
 ok "Domains pruned."
 
-# ---------- optional: LICENSE ----------
-if [ ! -f LICENSE ]; then
-  if yesno "Add an MIT LICENSE?" y; then
-    YEAR=$(date +%Y)
-    cat > LICENSE <<EOF
-MIT License
-
-Copyright (c) $YEAR $ORG
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-EOF
-    ok "LICENSE created."
-  fi
-fi
-
 # ---------- self-delete + commit ----------
 
 info "Removing setup.sh..."
@@ -223,6 +192,34 @@ git commit -m "chore: initialize project from template
 - Project: $PROJECT_NAME
 - Domains: $([ $USE_WEB = 1 ] && printf 'web ')$([ $USE_CONTRACTS = 1 ] && printf 'contracts ')$([ $USE_DESIGN = 1 ] && printf 'design')
 " >/dev/null
+
+# ---------- optional: create GitHub repo and push ----------
+
+REPO_CREATED=0
+if command -v gh >/dev/null 2>&1 && gh auth status >/dev/null 2>&1; then
+  if git remote get-url origin >/dev/null 2>&1; then
+    info "Remote 'origin' already configured — skipping GitHub repo creation."
+  else
+    echo
+    if yesno "Create GitHub repo '$ORG/$REPO' and push now?" y; then
+      VIS_FLAG="--private"
+      yesno "Make repo private?" y || VIS_FLAG="--public"
+      info "Creating $ORG/$REPO on GitHub..."
+      if gh repo create "$ORG/$REPO" "$VIS_FLAG" --source=. --remote=origin --push; then
+        ok "Repo created and pushed."
+        REPO_CREATED=1
+        info "Triggering sync-labels workflow so issue labels exist..."
+        gh workflow run sync-labels.yml >/dev/null 2>&1 || true
+        # Give the workflow a few seconds to apply labels before we try to use them.
+        sleep 8
+      else
+        err "gh repo create failed — you can push manually later."
+      fi
+    fi
+  fi
+else
+  info "gh CLI not available or not authenticated — skipping GitHub repo creation."
+fi
 
 # ---------- first PM issue ----------
 #
@@ -286,11 +283,18 @@ echo
 ok "Done."
 echo
 bold "Next steps"
-echo "  1. Push to your new repo: git push -u origin main"
-echo "  2. Run the sync-labels workflow once (or push .github/labels.yml) to apply labels"
-echo "  3. Upload initial sources to docs/sources/ and update docs/sources/README.md"
+STEP=1
+if [ "$REPO_CREATED" = 0 ]; then
+  echo "  $STEP. Create the GitHub repo and push:"
+  echo "       gh repo create $ORG/$REPO --private --source=. --remote=origin --push"
+  STEP=$((STEP+1))
+  echo "  $STEP. Run the sync-labels workflow once (or push .github/labels.yml) to apply labels"
+  STEP=$((STEP+1))
+fi
+echo "  $STEP. Upload initial sources to docs/sources/ and update docs/sources/README.md"
+STEP=$((STEP+1))
 if [ "$FIRST_ISSUE_CREATED" = 0 ]; then
-  echo "  4. Open the entry-point PM issue:"
+  echo "  $STEP. Open the entry-point PM issue:"
   echo "       gh issue create --title '[PM] Synthesize initial project documentation' \\"
   echo "         --label 'role:pm' --label 'type:docs' --label 'status:ready'"
 fi

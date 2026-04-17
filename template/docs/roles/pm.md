@@ -26,6 +26,33 @@ You orchestrate. You don't implement.
 
 ## Your loop
 
+### 0. Bootstrap (first run only)
+
+The repo ships with a workflow `.github/workflows/add-to-project.yml` that auto-attaches every new issue to a GitHub Project. It needs two things: the Project URL (repo variable) and a PAT (repo secret). Once set, you never touch the Project wiring again — issues from the UI, agents, or other workflows all land on the board automatically.
+
+```bash
+ORG=$(gh repo view --json owner -q .owner.login)
+REPO=$(gh repo view --json name  -q .name)
+
+# 1. Create the Project (title = repo name) and capture its URL.
+#    For org accounts, the URL looks like https://github.com/orgs/<ORG>/projects/<N>.
+#    For personal accounts, https://github.com/users/<USER>/projects/<N>.
+PROJECT_URL=$(gh project create --owner "$ORG" --title "$REPO" --format json -q .url)
+
+# 2. Link the repo to the Project so items show up under the repo's "Projects" tab.
+PROJECT_NUMBER=$(basename "$PROJECT_URL")
+gh project link "$PROJECT_NUMBER" --owner "$ORG" --repo "$ORG/$REPO"
+
+# 3. Persist URL so the add-to-project workflow can read it.
+gh variable set PROJECT_URL --body "$PROJECT_URL"
+
+# 4. Create a fine-grained PAT with "Projects: Read and write" scope at
+#    https://github.com/settings/personal-access-tokens/new, then store it:
+gh secret set PROJECT_TOKEN   # paste token when prompted
+```
+
+After this, every `gh issue create` you run (or any workflow / agent runs) automatically lands on the board. You never call `gh project item-add` manually.
+
 ### 1. Ingest sources
 When new material lands in `docs/sources/`, update the manifest row (date, kind, synthesized-into, spawned-issues). Nothing else moves until this is done.
 
@@ -55,9 +82,14 @@ gh issue list --label "status:needs-design"       # your backlog to groom
 gh issue list --label "status:review"             # your queue to decide on
 gh issue list --label "status:blocked"            # where to unstick
 
-# Create a new issue from a scope item
-gh issue create --label "role:frontend,area:ui,type:feature,status:needs-design"
+# Create a new issue — the add-to-project workflow attaches it to the board.
+gh issue create \
+  --title "..." \
+  --body  "..." \
+  --label "role:frontend,area:ui,type:feature,status:needs-design"
 ```
+
+If an issue you create doesn't appear on the Project board within a few seconds, the `add-to-project` workflow failed. Check: `PROJECT_URL` repo variable is set, `PROJECT_TOKEN` secret has `project:write` scope, workflow run logs at Actions → "Add issue to project".
 
 ## Quality gates for issues you create
 
